@@ -1,0 +1,11 @@
+node_modules
+dist
+.git
+.github
+docs
+tests
+examples
+coverage
+*.log
+.DS_Store
+Thumbs.db
