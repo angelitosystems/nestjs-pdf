@@ -1,0 +1,22 @@
+# Source and development files
+src/
+tests/
+examples/
+coverage/
+
+# Config files
+tsconfig.json
+tsconfig.build.json
+tsup.config.ts
+jest.config.ts
+.eslintrc.js
+.prettierrc
+.gitignore
+.npmignore
+Dockerfile
+
+# Logs and IDE
+*.log
+.vscode/
+.idea/
+

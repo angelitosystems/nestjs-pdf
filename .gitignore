@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Production output
+dist/
+
+# Test coverage
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Playwright binaries
+.local-browsers/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+

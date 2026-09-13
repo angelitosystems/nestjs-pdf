@@ -1,0 +1,145 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #111827;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.cover-page {
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 60px 40px;
+}
+
+.brand-pill {
+  display: inline-block;
+  background: #1e3a8a;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 6px 14px;
+  border-radius: 20px;
+}
+
+.report-title {
+  font-size: 36px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+.report-subtitle {
+  font-size: 18px;
+  color: #475569;
+  margin-bottom: 40px;
+}
+
+.report-meta {
+  border-top: 2px solid #e2e8f0;
+  padding-top: 20px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.report-body {
+  padding: 30px 40px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  margin-top: 25px;
+  margin-bottom: 15px;
+}
+
+.paragraph {
+  color: #334155;
+  margin-bottom: 20px;
+  text-align: justify;
+}
+
+.kpi-grid {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.kpi-card {
+  flex: 1;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+.kpi-label {
+  display: block;
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.kpi-value {
+  display: block;
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.kpi-change {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.positive { color: #16a34a; }
+.negative { color: #dc2626; }
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.report-table th {
+  background: #f1f5f9;
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  border-bottom: 2px solid #cbd5e1;
+}
+
+.report-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.status-on-track { background: #dcfce7; color: #15803d; }
+.status-attention { background: #fef9c3; color: #854d0e; }
+.status-delayed { background: #fee2e2; color: #b91c1c; }
+

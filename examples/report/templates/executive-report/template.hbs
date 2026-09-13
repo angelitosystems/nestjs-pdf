@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{report.title}}</title>
+</head>
+<body>
+  <!-- Cover Page -->
+  <section class="cover-page">
+    <div class="cover-brand">
+      <span class="brand-pill">ANGELITO SYSTEMS</span>
+    </div>
+    <div class="cover-content">
+      <h1 class="report-title">{{report.title}}</h1>
+      <p class="report-subtitle">{{report.subtitle}}</p>
+      <div class="report-meta">
+        <p><strong>Prepared For:</strong> {{report.client}}</p>
+        <p><strong>Date:</strong> {{date report.date}}</p>
+        <p><strong>Classification:</strong> {{uppercase report.classification}}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Page Break to Page 2 -->
+  <div class="page-break-after"></div>
+
+  <!-- Executive Summary -->
+  <section class="report-body">
+    <h2 class="section-title">1. Executive Summary</h2>
+    <p class="paragraph">{{report.summary}}</p>
+
+    <h2 class="section-title">2. Key Performance Indicators (KPIs)</h2>
+    <div class="kpi-grid">
+      {{#each report.kpis}}
+      <div class="kpi-card">
+        <span class="kpi-label">{{this.label}}</span>
+        <span class="kpi-value">{{this.value}}</span>
+        <span class="kpi-change {{#if (gt this.growth 0)}}positive{{else}}negative{{/if}}">
+          {{#if (gt this.growth 0)}}+{{/if}}{{this.growth}}% vs prev quarter
+        </span>
+      </div>
+      {{/each}}
+    </div>
+
+    <!-- Long Table with page break protection -->
+    <h2 class="section-title">3. Detailed Performance Breakdown</h2>
+    <table class="report-table">
+      <thead>
+        <tr>
+          <th>Department</th>
+          <th>Budget</th>
+          <th>Actual</th>
+          <th>Variance</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each report.departments}}
+        <tr class="avoid-break">
+          <td><strong>{{this.name}}</strong></td>
+          <td>{{currency this.budget "USD"}}</td>
+          <td>{{currency this.actual "USD"}}</td>
+          <td>{{currency this.variance "USD"}}</td>
+          <td><span class="status-badge status-{{lowercase this.status}}">{{this.status}}</span></td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </section>
+</body>
+</html>
+

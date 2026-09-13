@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Factura Electrónica</title>
+</head>
+<body>
+  <div class="invoice-container">
+    <!-- Header -->
+    <header class="invoice-header">
+      <div class="company-brand">
+        <div class="company-logo">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" rx="10" fill="#2563EB"/>
+            <path d="M14 34L24 14L34 34H28.5L24 24.5L19.5 34H14Z" fill="white"/>
+          </svg>
+        </div>
+        <div class="company-details">
+          <h1 class="company-name">{{company.name}}</h1>
+          <p class="company-sub">RUT / Tax ID: {{company.taxId}}</p>
+          <p class="company-sub">{{company.address}}</p>
+          <p class="company-sub">{{company.email}} | {{company.phone}}</p>
+        </div>
+      </div>
+
+      <div class="invoice-meta">
+        <div class="meta-badge">FACTURA ELECTRÓNICA</div>
+        <table class="meta-table">
+          <tr>
+            <th>Número:</th>
+            <td><strong>{{invoiceNumber}}</strong></td>
+          </tr>
+          <tr>
+            <th>Fecha Emisión:</th>
+            <td>{{date issueDate}}</td>
+          </tr>
+          <tr>
+            <th>Fecha Vencimiento:</th>
+            <td>{{date dueDate}}</td>
+          </tr>
+          <tr>
+            <th>Estado:</th>
+            <td><span class="status-tag status-{{lowercase status}}">{{uppercase status}}</span></td>
+          </tr>
+        </table>
+      </div>
+    </header>
+
+    <!-- Client Info -->
+    <section class="invoice-client-section">
+      <div class="client-card">
+        <h3>FACTURAR A:</h3>
+        <p class="client-name"><strong>{{customer.name}}</strong></p>
+        <p>Identificación: {{customer.taxId}}</p>
+        <p>Dirección: {{customer.address}}</p>
+        <p>Email: {{customer.email}}</p>
+      </div>
+      <div class="payment-card">
+        <h3>DETALLES DE PAGO:</h3>
+        <p>Método: {{payment.method}}</p>
+        <p>Banco: {{payment.bank}}</p>
+        <p>Cuenta: {{payment.accountNumber}}</p>
+      </div>
+    </section>
+
+    <!-- Line Items Table -->
+    <section class="items-section">
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th class="col-num">#</th>
+            <th class="col-desc">Descripción</th>
+            <th class="col-qty">Cantidad</th>
+            <th class="col-price">Precio Unit.</th>
+            <th class="col-tax">IVA</th>
+            <th class="col-total">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each items}}
+          <tr>
+            <td class="col-num">{{@index}}</td>
+            <td class="col-desc">
+              <strong>{{this.name}}</strong>
+              {{#if this.description}}
+                <div class="item-sub">{{this.description}}</div>
+              {{/if}}
+            </td>
+            <td class="col-qty">{{formatNumber this.quantity 0}}</td>
+            <td class="col-price">{{currency this.unitPrice "USD"}}</td>
+            <td class="col-tax">{{this.taxRate}}%</td>
+            <td class="col-total">{{currency this.total "USD"}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Summary & Totals -->
+    <section class="totals-section">
+      <div class="notes-area">
+        <h4>Términos &amp; Condiciones</h4>
+        <p>{{notes}}</p>
+      </div>
+      <div class="totals-table-wrapper">
+        <table class="totals-table">
+          <tr>
+            <td>Subtotal:</td>
+            <td class="amount">{{currency totals.subtotal "USD"}}</td>
+          </tr>
+          <tr>
+            <td>Descuentos:</td>
+            <td class="amount">-{{currency totals.discounts "USD"}}</td>
+          </tr>
+          <tr>
+            <td>IVA (19%):</td>
+            <td class="amount">{{currency totals.tax "USD"}}</td>
+          </tr>
+          <tr class="grand-total-row">
+            <td><strong>TOTAL A PAGAR:</strong></td>
+            <td class="amount"><strong>{{currency totals.grandTotal "USD"}}</strong></td>
+          </tr>
+        </table>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
+

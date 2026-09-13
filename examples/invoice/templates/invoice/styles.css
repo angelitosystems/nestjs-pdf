@@ -1,0 +1,203 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #1f2937;
+  background-color: #ffffff;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.invoice-container {
+  padding: 20px 25px;
+}
+
+.invoice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.company-brand {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.company-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.company-sub {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.invoice-meta {
+  text-align: right;
+}
+
+.meta-badge {
+  display: inline-block;
+  background: #eff6ff;
+  color: #2563eb;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 11px;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.meta-table {
+  margin-left: auto;
+  border-collapse: collapse;
+}
+
+.meta-table th {
+  text-align: right;
+  padding: 2px 8px;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.meta-table td {
+  text-align: left;
+  padding: 2px 0;
+}
+
+.status-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.status-paid {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.status-pending {
+  background-color: #fef9c3;
+  color: #854d0e;
+}
+
+.invoice-client-section {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0;
+  gap: 20px;
+}
+
+.client-card, .payment-card {
+  flex: 1;
+  background: #f9fafb;
+  padding: 12px 16px;
+  border-radius: 6px;
+  border: 1px solid #f3f4f6;
+}
+
+.client-card h3, .payment-card h3 {
+  font-size: 11px;
+  color: #6b7280;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.items-section {
+  margin: 20px 0;
+}
+
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.items-table th {
+  background: #2563eb;
+  color: #ffffff;
+  padding: 8px 10px;
+  font-weight: 600;
+  text-align: left;
+  font-size: 11px;
+}
+
+.items-table td {
+  padding: 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.col-num { width: 5%; text-align: center !important; }
+.col-desc { width: 45%; }
+.col-qty { width: 10%; text-align: center; }
+.col-price { width: 15%; text-align: right; }
+.col-tax { width: 10%; text-align: center; }
+.col-total { width: 15%; text-align: right; }
+
+.item-sub {
+  font-size: 10px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.totals-section {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  page-break-inside: avoid;
+}
+
+.notes-area {
+  width: 50%;
+  padding-right: 20px;
+}
+
+.notes-area h4 {
+  font-size: 11px;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.notes-area p {
+  font-size: 10px;
+  color: #6b7280;
+}
+
+.totals-table-wrapper {
+  width: 45%;
+}
+
+.totals-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.totals-table td {
+  padding: 6px 10px;
+  text-align: left;
+}
+
+.totals-table td.amount {
+  text-align: right;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.grand-total-row {
+  border-top: 2px solid #2563eb;
+  border-bottom: 2px solid #2563eb;
+  color: #1e3a8a;
+  font-size: 14px;
+}
+
