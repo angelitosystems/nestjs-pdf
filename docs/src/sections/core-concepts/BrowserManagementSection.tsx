@@ -1,6 +1,6 @@
 import { CodeBlock } from '../../components/CodeBlock';
 import { useI18n } from '../../hooks/useI18n';
-import { Cpu, RefreshCw, Layers, CheckCircle } from 'lucide-react';
+import { Cpu, RefreshCw, Layers } from 'lucide-react';
 
 export function BrowserManagementSection() {
   const { locale } = useI18n();

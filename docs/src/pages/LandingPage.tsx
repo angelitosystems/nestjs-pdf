@@ -7,11 +7,6 @@ import {
   Sparkles,
   ArrowRight,
   ExternalLink,
-  ShieldCheck,
-  CheckCircle2,
-  Cpu,
-  Layers,
-  Zap,
 } from 'lucide-react';
 
 interface LandingPageProps {

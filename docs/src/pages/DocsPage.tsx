@@ -1,4 +1,3 @@
-import React from 'react';
 import { Sidebar } from '../components/Sidebar';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { navigationData } from '../data/navigation';
@@ -90,6 +89,7 @@ export function DocsPage({ sectionId, itemId, onSelect, onGoHome }: DocsPageProp
       case 'security-adv':
         return <SecuritySection />;
       case 'storage':
+        return <StorageSection />;
       case 'custom-storage':
         return <CustomStorageGuide />;
       case 'queue':
