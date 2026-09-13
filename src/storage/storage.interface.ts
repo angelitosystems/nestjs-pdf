@@ -1,11 +1,4 @@
-/**
- * Options for saving files through a StorageAdapter.
- */
-export interface StorageSaveOptions {
-  contentType?: string;
-  metadata?: Record<string, string>;
-  overwrite?: boolean;
-}
+import { StorageSaveOptions } from './storage.types';
 
 /**
  * Common contract for storage adapters (Local filesystem, S3, MinIO, Azure Blob, GCS).
@@ -13,15 +6,11 @@ export interface StorageSaveOptions {
 export interface StorageAdapter {
   /**
    * Saves the provided buffer to the target storage destination.
-   * @param buffer Content to save
-   * @param destination Destination path or key
-   * @param options Additional save options
-   * @returns Resolved absolute destination path or URI
    */
   save(buffer: Buffer, destination: string, options?: StorageSaveOptions): Promise<string>;
 
   /**
-   * Checks whether a file exists at the given destination path or key.
+   * Checks whether a file exists at the given destination.
    */
   exists(destination: string): Promise<boolean>;
 
@@ -35,4 +24,3 @@ export interface StorageAdapter {
    */
   delete(destination: string): Promise<void>;
 }
-
