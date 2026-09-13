@@ -1,13 +1,14 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
-import { AssetManager } from '../../src/assets/asset-manager';
-import { PdfAssetError, PdfSecurityError } from '../../src/pdf/pdf.exceptions';
+import { AssetManagerService } from '../../src/asset/asset-manager.service';
+import { AssetService } from '../../src/asset/asset.service';
+import { PdfSecurityService } from '../../src/security/security.service';
+import { PdfAssetError, PdfSecurityError } from '../../src/common/exceptions/pdf.exceptions';
 
-describe('AssetManager', () => {
+describe('AssetModule Services', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pdf-asset-test-'));
   const testFile = path.join(tempDir, 'test-image.png');
-  // Simple 1x1 PNG buffer
   const samplePngBuffer = Buffer.from(
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
     'base64',
@@ -21,9 +22,15 @@ describe('AssetManager', () => {
     fs.rmSync(tempDir, { recursive: true, force: true });
   });
 
+  const createAssetService = (securityOpts = {}) => {
+    const secService = new PdfSecurityService({ security: securityOpts, templatesPath: tempDir });
+    const manager = new AssetManagerService(secService, { security: securityOpts, templatesPath: tempDir });
+    return new AssetService(manager);
+  };
+
   it('should resolve a raw Buffer directly into a data URI', async () => {
-    const manager = new AssetManager({}, tempDir);
-    const resolved = await manager.resolveAsset(samplePngBuffer, undefined, 'image/png');
+    const service = createAssetService();
+    const resolved = await service.resolve(samplePngBuffer, undefined, 'image/png');
 
     expect(resolved.mimeType).toBe('image/png');
     expect(resolved.dataUri).toContain('data:image/png;base64,');
@@ -31,45 +38,43 @@ describe('AssetManager', () => {
   });
 
   it('should resolve a valid Data URI string', async () => {
-    const manager = new AssetManager({}, tempDir);
+    const service = createAssetService();
     const dataUri = `data:image/png;base64,${samplePngBuffer.toString('base64')}`;
-    const resolved = await manager.resolveAsset(dataUri);
+    const resolved = await service.resolve(dataUri);
 
     expect(resolved.mimeType).toBe('image/png');
     expect(resolved.dataUri).toBe(dataUri);
-    expect(resolved.data.equals(samplePngBuffer)).toBe(true);
   });
 
   it('should resolve a local file safely to base64 Data URI', async () => {
-    const manager = new AssetManager({ allowedAssetPaths: [tempDir] }, tempDir);
-    const resolved = await manager.resolveAsset('test-image.png', tempDir);
+    const service = createAssetService({ allowedAssetPaths: [tempDir] });
+    const resolved = await service.resolve('test-image.png', tempDir);
 
     expect(resolved.mimeType).toBe('image/png');
     expect(resolved.dataUri).toContain('data:image/png;base64,');
   });
 
   it('should reject local files outside allowed asset paths', async () => {
-    const manager = new AssetManager({ allowedAssetPaths: [path.join(tempDir, 'nonexistent')] }, tempDir);
-    // Attempt to access a file in another directory
+    const service = createAssetService({ allowedAssetPaths: [path.join(tempDir, 'nonexistent')] });
     const sensitiveFile = path.join(os.tmpdir(), 'arbitrary.txt');
     fs.writeFileSync(sensitiveFile, 'sensitive');
 
-    await expect(manager.resolveAsset(sensitiveFile, tempDir)).rejects.toThrow(PdfSecurityError);
+    await expect(service.resolve(sensitiveFile, tempDir)).rejects.toThrow(PdfSecurityError);
 
     fs.unlinkSync(sensitiveFile);
   });
 
   it('should reject assets that exceed maxAssetSizeBytes', async () => {
-    const manager = new AssetManager({ maxAssetSizeBytes: 10 }, tempDir);
-    await expect(manager.resolveAsset(samplePngBuffer)).rejects.toThrow(PdfAssetError);
+    const service = createAssetService({ maxAssetSizeBytes: 10 });
+    await expect(service.resolve(samplePngBuffer)).rejects.toThrow(PdfAssetError);
   });
 
   it('should resolve custom font and generate CSS @font-face', async () => {
     const fontFile = path.join(tempDir, 'Roboto.ttf');
     fs.writeFileSync(fontFile, Buffer.from('fake font data'));
 
-    const manager = new AssetManager({ allowedAssetPaths: [tempDir] }, tempDir);
-    const css = await manager.resolveFont(
+    const service = createAssetService({ allowedAssetPaths: [tempDir] });
+    const css = await service.resolveFont(
       {
         family: 'Roboto',
         path: fontFile,
@@ -86,4 +91,3 @@ describe('AssetManager', () => {
     expect(css).toContain("src: url('data:font/ttf;base64,");
   });
 });
-

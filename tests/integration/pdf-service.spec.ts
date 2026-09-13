@@ -1,19 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { PdfModule } from '../../src/pdf/pdf.module';
 import { PdfService } from '../../src/pdf/pdf.service';
-import { RendererService } from '../../src/rendering/renderer.service';
-import {
-  ASSET_MANAGER,
-  PDF_ENGINE,
-  PDF_MODULE_OPTIONS,
-  STORAGE_ADAPTER,
-  TEMPLATE_ENGINE,
-} from '../../src/pdf/pdf.constants';
-import { EngineRenderOptions, PdfEngine } from '../../src/engines/pdf-engine.interface';
-import { HandlebarsTemplateEngine } from '../../src/templates/handlebars/handlebars.template-engine';
-import { AssetManager } from '../../src/assets/asset-manager';
-import { LocalStorageAdapter } from '../../src/storage/local.storage';
-import { PdfAbortError } from '../../src/pdf/pdf.exceptions';
-import { PdfEvent } from '../../src/pdf/pdf.types';
+import { PDF_ENGINE } from '../../src/common/constants/tokens.constants';
+import { PdfEngine } from '../../src/engine/pdf-engine.interface';
+import { EngineRenderOptions } from '../../src/engine/engine.types';
+import { PdfAbortError } from '../../src/common/exceptions/pdf.exceptions';
+import { PdfEvent } from '../../src/common/types/pdf.types';
 
 describe('PdfService (Integration)', () => {
   let pdfService: PdfService;
@@ -30,48 +22,30 @@ describe('PdfService (Integration)', () => {
     mockEngine = {
       render: jest.fn().mockImplementation(async (opts: EngineRenderOptions) => {
         capturedRenderOptions = opts;
-        // Simulate a small render delay
         await new Promise((resolve) => setTimeout(resolve, 10));
         return fakePdfBuffer;
       }),
     };
 
     const moduleRef: TestingModule = await Test.createTestingModule({
-      providers: [
-        {
-          provide: PDF_MODULE_OPTIONS,
-          useValue: {
-            templatesPath: './templates',
-            defaultFormat: 'A4',
-            concurrency: 2,
-            onEvent: (evt: PdfEvent) => capturedEvents.push(evt),
-          },
-        },
-        {
-          provide: ASSET_MANAGER,
-          useFactory: () => new AssetManager(),
-        },
-        {
-          provide: TEMPLATE_ENGINE,
-          useFactory: () => new HandlebarsTemplateEngine(),
-        },
-        {
-          provide: STORAGE_ADAPTER,
-          useFactory: () => new LocalStorageAdapter(),
-        },
-        {
-          provide: PDF_ENGINE,
-          useValue: mockEngine,
-        },
-        RendererService,
-        PdfService,
+      imports: [
+        PdfModule.forRoot({
+          templatesPath: './templates',
+          defaultFormat: 'A4',
+          concurrency: 2,
+          browser: { min: 0 },
+          onEvent: (evt: PdfEvent) => capturedEvents.push(evt),
+        }),
       ],
-    }).compile();
+    })
+      .overrideProvider(PDF_ENGINE)
+      .useValue(mockEngine)
+      .compile();
 
     pdfService = moduleRef.get<PdfService>(PdfService);
   });
 
-  it('should generate a PDF and return a valid PdfResult', async () => {
+  it('should generate a PDF and return a valid PdfResult through facade and modular pipeline', async () => {
     const result = await pdfService.generate({
       html: '<h1>Invoice #{{invNum}}</h1><p>Amount: {{currency amount "EUR"}}</p>',
       data: { invNum: 'INV-2026-001', amount: 500 },
@@ -90,7 +64,6 @@ describe('PdfService (Integration)', () => {
     expect(result.size).toBe(fakePdfBuffer.length);
     expect(result.buffer.equals(fakePdfBuffer)).toBe(true);
 
-    // Verify engine was called with compiled HTML
     expect(mockEngine.render).toHaveBeenCalled();
     expect(capturedRenderOptions).toBeDefined();
     expect(capturedRenderOptions?.html).toContain('Invoice #INV-2026-001');
@@ -98,7 +71,6 @@ describe('PdfService (Integration)', () => {
     expect(capturedRenderOptions?.format).toBe('A4');
     expect(capturedRenderOptions?.orientation).toBe('portrait');
 
-    // Verify events were emitted
     const eventTypes = capturedEvents.map((e) => e.type);
     expect(eventTypes).toContain('generation.started');
     expect(eventTypes).toContain('generation.completed');
@@ -137,4 +109,3 @@ describe('PdfService (Integration)', () => {
     ).rejects.toThrow(PdfAbortError);
   });
 });
-

@@ -1,55 +1,32 @@
-import {
-  Inject,
-  Injectable,
-  Logger,
-  OnModuleDestroy,
-  Optional,
-} from '@nestjs/common';
-import { GeneratePdfOptions, HttpResponseLike, PdfEvent, PdfModuleOptions, PdfResult, SendHttpOptions } from './pdf.types';
-import { PDF_MODULE_OPTIONS, STORAGE_ADAPTER } from './pdf.constants';
-import { RendererService } from '../rendering/renderer.service';
-import { StorageAdapter } from '../storage/storage.interface';
-import { ConcurrencyQueue } from '../utils/concurrency-queue';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { GeneratePdfOptions, HttpResponseLike, PdfEvent, PdfModuleOptions, PdfResult, SendHttpOptions } from '../common/types/pdf.types';
+import { PDF_MODULE_OPTIONS } from '../common/constants/tokens.constants';
+import { PdfRendererService } from '../renderer/renderer.service';
+import { ConcurrencyQueueService } from '../queue/concurrency-queue.service';
+import { StorageService } from '../storage/storage.service';
 import { PdfResultImpl } from './pdf.result';
-import { LocalStorageAdapter } from '../storage/local.storage';
 
+/**
+ * Public facade service for generating and streaming PDF documents in NestJS.
+ */
 @Injectable()
-export class PdfService implements OnModuleDestroy {
+export class PdfService {
   private readonly logger = new Logger(PdfService.name);
-  private readonly queue: ConcurrencyQueue;
-  private readonly storage: StorageAdapter;
   private readonly isLoggingEnabled: boolean;
 
   constructor(
-    private readonly renderer: RendererService,
-    @Optional()
-    @Inject(STORAGE_ADAPTER)
-    storageAdapter?: StorageAdapter,
+    private readonly renderer: PdfRendererService,
+    private readonly queue: ConcurrencyQueueService,
+    private readonly storage: StorageService,
     @Optional()
     @Inject(PDF_MODULE_OPTIONS)
     private readonly moduleOptions: PdfModuleOptions = {},
   ) {
     this.isLoggingEnabled = this.moduleOptions.logger?.enabled !== false;
-    this.storage = storageAdapter || new LocalStorageAdapter();
-
-    this.queue = new ConcurrencyQueue({
-      concurrency: this.moduleOptions.concurrency ?? 5,
-      queueTimeout: this.moduleOptions.queueTimeout ?? 30000,
-      onWaiting: (queueSize) => {
-        this.emitEvent('queue.waiting', { queueSize });
-      },
-      onCompleted: () => {
-        this.emitEvent('queue.completed');
-      },
-    });
-  }
-
-  public onModuleDestroy(): void {
-    this.queue.destroy('PdfService is shutting down');
   }
 
   /**
-   * Generates a PDF document asynchronously according to provided options.
+   * Generates a PDF asynchronously according to the provided options.
    */
   public async generate(options: GeneratePdfOptions): Promise<PdfResult> {
     const startTime = Date.now();
@@ -64,7 +41,7 @@ export class PdfService implements OnModuleDestroy {
     try {
       const buffer = await this.queue.run(
         async () => {
-          return await this.renderer.renderPdf(options);
+          return await this.renderer.render(options);
         },
         {
           signal: options.signal,
@@ -90,7 +67,7 @@ export class PdfService implements OnModuleDestroy {
   }
 
   /**
-   * Generates and immediately streams the PDF to an HTTP response (Express or Fastify).
+   * Generates and immediately streams the PDF through an HTTP response (Express or Fastify).
    */
   public async send(
     response: HttpResponseLike,
@@ -127,9 +104,8 @@ export class PdfService implements OnModuleDestroy {
           error,
         });
       } catch {
-        // Suppress event listener failure
+        // Suppress callback failure
       }
     }
   }
 }
-

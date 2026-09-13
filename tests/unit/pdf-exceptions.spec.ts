@@ -9,7 +9,7 @@ import {
   PdfSecurityError,
   PdfStorageError,
   PdfConfigurationError,
-} from '../../src/pdf/pdf.exceptions';
+} from '../../src/common/exceptions/pdf.exceptions';
 
 describe('PdfExceptions', () => {
   it('PdfError should inherit from Error with code and details', () => {
@@ -72,4 +72,3 @@ describe('PdfExceptions', () => {
     expect(err.code).toBe('CONFIGURATION_ERROR');
   });
 });
-

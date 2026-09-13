@@ -1,11 +1,13 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
-import { LocalStorageAdapter } from '../../src/storage/local.storage';
+import { LocalStorageService } from '../../src/storage/local/local-storage.service';
+import { StorageService } from '../../src/storage/storage.service';
 
-describe('LocalStorageAdapter', () => {
+describe('StorageModule Services', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pdf-storage-test-'));
-  const adapter = new LocalStorageAdapter(tempDir);
+  const localService = new LocalStorageService({ storage: { basePath: tempDir } });
+  const storageService = new StorageService(localService);
 
   afterAll(() => {
     fs.rmSync(tempDir, { recursive: true, force: true });
@@ -15,29 +17,28 @@ describe('LocalStorageAdapter', () => {
     const content = Buffer.from('PDF file payload');
     const relativePath = 'nested/invoices/inv-001.pdf';
 
-    const savedPath = await adapter.save(content, relativePath);
+    const savedPath = await storageService.save(content, relativePath);
 
     expect(fs.existsSync(savedPath)).toBe(true);
     expect(fs.readFileSync(savedPath).toString()).toBe('PDF file payload');
   });
 
   it('should check if file exists', async () => {
-    const exists = await adapter.exists('nested/invoices/inv-001.pdf');
-    const notExists = await adapter.exists('nested/invoices/does-not-exist.pdf');
+    const exists = await storageService.exists('nested/invoices/inv-001.pdf');
+    const notExists = await storageService.exists('nested/invoices/does-not-exist.pdf');
 
     expect(exists).toBe(true);
     expect(notExists).toBe(false);
   });
 
   it('should read file from storage', async () => {
-    const data = await adapter.read('nested/invoices/inv-001.pdf');
+    const data = await storageService.read('nested/invoices/inv-001.pdf');
     expect(data.toString()).toBe('PDF file payload');
   });
 
   it('should delete file from storage', async () => {
-    await adapter.delete('nested/invoices/inv-001.pdf');
-    const existsAfter = await adapter.exists('nested/invoices/inv-001.pdf');
+    await storageService.delete('nested/invoices/inv-001.pdf');
+    const existsAfter = await storageService.exists('nested/invoices/inv-001.pdf');
     expect(existsAfter).toBe(false);
   });
 });
-

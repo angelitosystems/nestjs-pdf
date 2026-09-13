@@ -1,19 +1,21 @@
 import { Readable } from 'stream';
 import { PdfResultImpl } from '../../src/pdf/pdf.result';
+import { StorageService } from '../../src/storage/storage.service';
 import { StorageAdapter } from '../../src/storage/storage.interface';
-import { HttpResponseLike } from '../../src/pdf/pdf.types';
+import { HttpResponseLike } from '../../src/common/types/pdf.types';
 
 describe('PdfResult', () => {
   const dummyBuffer = Buffer.from('%PDF-1.4 dummy content');
-  const mockStorage: StorageAdapter = {
+  const mockAdapter: StorageAdapter = {
     save: jest.fn().mockResolvedValue('/resolved/path.pdf'),
     exists: jest.fn().mockResolvedValue(true),
     read: jest.fn().mockResolvedValue(dummyBuffer),
     delete: jest.fn().mockResolvedValue(undefined),
   };
+  const mockStorageService = new StorageService(mockAdapter);
 
   it('should expose buffer, size, filename, and mimeType', () => {
-    const result = new PdfResultImpl(dummyBuffer, 'report.pdf', { title: 'Test Report' }, mockStorage);
+    const result = new PdfResultImpl(dummyBuffer, 'report.pdf', { title: 'Test Report' }, mockStorageService);
 
     expect(result.buffer).toBe(dummyBuffer);
     expect(result.size).toBe(dummyBuffer.length);
@@ -36,11 +38,11 @@ describe('PdfResult', () => {
     expect(combined.equals(dummyBuffer)).toBe(true);
   });
 
-  it('should delegate save() to configured StorageAdapter', async () => {
-    const result = new PdfResultImpl(dummyBuffer, 'invoice.pdf', undefined, mockStorage);
+  it('should delegate save() to StorageService and StorageAdapter', async () => {
+    const result = new PdfResultImpl(dummyBuffer, 'invoice.pdf', undefined, mockStorageService);
     const savedPath = await result.save('/target/invoice.pdf');
 
-    expect(mockStorage.save).toHaveBeenCalledWith(dummyBuffer, '/target/invoice.pdf', {
+    expect(mockAdapter.save).toHaveBeenCalledWith(dummyBuffer, '/target/invoice.pdf', {
       contentType: 'application/pdf',
       overwrite: true,
     });
@@ -71,7 +73,7 @@ describe('PdfResult', () => {
     expect(sendMock).toHaveBeenCalledWith(dummyBuffer);
   });
 
-  it('should send PDF through Fastify response object (reply.header, reply.code, reply.send)', async () => {
+  it('should send PDF through Fastify response object', async () => {
     const result = new PdfResultImpl(dummyBuffer, 'invoice.pdf');
     const headerMock = jest.fn();
     const sendMock = jest.fn();
@@ -94,4 +96,3 @@ describe('PdfResult', () => {
     expect(sendMock).toHaveBeenCalledWith(dummyBuffer);
   });
 });
-

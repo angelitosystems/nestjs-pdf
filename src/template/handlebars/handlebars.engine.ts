@@ -1,36 +1,41 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import Handlebars from 'handlebars';
-import { Injectable } from '@nestjs/common';
-import { TemplateEngine, RenderTemplateOptions } from '../template-engine.interface';
+import { Inject, Injectable, Optional } from '@nestjs/common';
+import { TemplateEngine } from '../template-engine.interface';
+import { RenderTemplateOptions } from '../template.types';
 import { defaultHandlebarsHelpers } from './handlebars.helpers';
-import { PdfCacheOptions, HandlebarsConfig } from '../../pdf/pdf.types';
-import { PdfRenderingError, PdfTemplateNotFoundError } from '../../pdf/pdf.exceptions';
-import { SecurityUtils } from '../../utils/security.utils';
+import { PDF_MODULE_OPTIONS } from '../../common/constants/tokens.constants';
+import { HandlebarsConfig, PdfCacheOptions, PdfModuleOptions } from '../../common/types/pdf.types';
+import { PdfRenderingError, PdfTemplateNotFoundError } from '../../common/exceptions/pdf.exceptions';
+import { PdfSecurityService } from '../../security/security.service';
 
-/**
- * Handlebars-based implementation of TemplateEngine with caching, security checks, and safe helpers.
- */
 @Injectable()
 export class HandlebarsTemplateEngine implements TemplateEngine {
   private readonly hbs: typeof Handlebars;
   private readonly cache = new Map<string, HandlebarsTemplateDelegate>();
+  private readonly defaultTemplatesPath: string;
+  private readonly cacheConfig: PdfCacheOptions;
 
   constructor(
-    private readonly defaultTemplatesPath: string = './templates',
-    private readonly cacheOptions: PdfCacheOptions = { enabled: false },
-    handlebarsConfig?: HandlebarsConfig,
+    private readonly securityService: PdfSecurityService,
+    @Optional()
+    @Inject(PDF_MODULE_OPTIONS)
+    moduleOptions?: PdfModuleOptions,
   ) {
     this.hbs = Handlebars.create();
+    this.defaultTemplatesPath = moduleOptions?.templatesPath || './templates';
+    this.cacheConfig = moduleOptions?.cache || { enabled: false };
 
-    // Register built-in safe helpers
+    // Register built-in helpers
     for (const [name, helper] of Object.entries(defaultHandlebarsHelpers)) {
       this.hbs.registerHelper(name, helper);
     }
 
-    // Register user custom helpers if provided
-    if (handlebarsConfig?.helpers) {
-      for (const [name, helper] of Object.entries(handlebarsConfig.helpers)) {
+    // Register custom user helpers
+    const customHelpers = moduleOptions?.handlebars?.helpers;
+    if (customHelpers) {
+      for (const [name, helper] of Object.entries(customHelpers)) {
         this.hbs.registerHelper(name, helper);
       }
     }
@@ -77,8 +82,7 @@ export class HandlebarsTemplateEngine implements TemplateEngine {
     const basePath = path.resolve(templatesPath || this.defaultTemplatesPath);
     const cacheKey = `${basePath}:${templateName}`;
 
-    // Cache lookup
-    if (this.cacheOptions.enabled && this.cache.has(cacheKey)) {
+    if (this.cacheConfig.enabled && this.cache.has(cacheKey)) {
       const cachedFn = this.cache.get(cacheKey)!;
       try {
         return cachedFn(data || {});
@@ -90,7 +94,6 @@ export class HandlebarsTemplateEngine implements TemplateEngine {
       }
     }
 
-    // Resolve template file
     const templateFilePath = this.resolveTemplateFile(templateName, basePath);
     let rawContent: string;
     try {
@@ -104,9 +107,8 @@ export class HandlebarsTemplateEngine implements TemplateEngine {
 
     const compiledFn = this.compile(rawContent);
 
-    if (this.cacheOptions.enabled) {
-      if (this.cacheOptions.maxItems && this.cache.size >= this.cacheOptions.maxItems) {
-        // Evict oldest entry (simple LRU/FIFO map eviction)
+    if (this.cacheConfig.enabled) {
+      if (this.cacheConfig.maxItems && this.cache.size >= this.cacheConfig.maxItems) {
         const firstKey = this.cache.keys().next().value;
         if (firstKey) this.cache.delete(firstKey);
       }
@@ -127,9 +129,6 @@ export class HandlebarsTemplateEngine implements TemplateEngine {
     this.cache.clear();
   }
 
-  /**
-   * Locates the template file inside the basePath with path traversal protection.
-   */
   public resolveTemplateFile(templateName: string, basePath: string): string {
     const candidates = [
       path.join(basePath, templateName, 'template.hbs'),
@@ -142,18 +141,16 @@ export class HandlebarsTemplateEngine implements TemplateEngine {
 
     for (const candidate of candidates) {
       try {
-        // Validate path traversal
-        const safeCandidate = SecurityUtils.validatePathTraversal(candidate, [basePath]);
+        const safeCandidate = this.securityService.validatePath(candidate, [basePath]);
         searchPaths.push(safeCandidate);
         if (fs.existsSync(safeCandidate) && fs.statSync(safeCandidate).isFile()) {
           return safeCandidate;
         }
       } catch {
-        // Ignored candidate if outside allowed directory
+        // Continue searching
       }
     }
 
     throw new PdfTemplateNotFoundError(templateName, candidates);
   }
 }
-

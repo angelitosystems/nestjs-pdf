@@ -1,14 +1,15 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
-import { HandlebarsTemplateEngine } from '../../src/templates/handlebars/handlebars.template-engine';
-import { PdfTemplateNotFoundError } from '../../src/pdf/pdf.exceptions';
+import { HandlebarsTemplateEngine } from '../../src/template/handlebars/handlebars.engine';
+import { TemplateService } from '../../src/template/template.service';
+import { PdfSecurityService } from '../../src/security/security.service';
+import { PdfTemplateNotFoundError } from '../../src/common/exceptions/pdf.exceptions';
 
-describe('HandlebarsTemplateEngine', () => {
+describe('HandlebarsTemplateEngine & TemplateService', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pdf-hbs-test-'));
 
   beforeAll(() => {
-    // Create templates/invoice/template.hbs
     const invoiceDir = path.join(tempDir, 'invoice');
     fs.mkdirSync(invoiceDir, { recursive: true });
     fs.writeFileSync(
@@ -16,7 +17,6 @@ describe('HandlebarsTemplateEngine', () => {
       '<h1>Invoice for {{customer}}</h1><p>Total: {{currency total "USD"}}</p>',
     );
 
-    // Create simple-report.hbs
     fs.writeFileSync(
       path.join(tempDir, 'simple-report.hbs'),
       '<h2>Report: {{title}}</h2>',
@@ -27,9 +27,19 @@ describe('HandlebarsTemplateEngine', () => {
     fs.rmSync(tempDir, { recursive: true, force: true });
   });
 
+  const createEngine = (cacheEnabled = false, customHelpers?: Record<string, (...args: unknown[]) => unknown>) => {
+    const secService = new PdfSecurityService({ templatesPath: tempDir });
+    return new HandlebarsTemplateEngine(secService, {
+      templatesPath: tempDir,
+      cache: { enabled: cacheEnabled },
+      handlebars: { helpers: customHelpers },
+    });
+  };
+
   it('should render inline template content', async () => {
-    const engine = new HandlebarsTemplateEngine(tempDir);
-    const result = await engine.render({
+    const engine = createEngine();
+    const service = new TemplateService(engine);
+    const result = await service.render({
       templateContent: '<p>Hello, {{name}}!</p>',
       data: { name: 'Angelito' },
     });
@@ -38,8 +48,9 @@ describe('HandlebarsTemplateEngine', () => {
   });
 
   it('should render directory template (template.hbs) with built-in helpers', async () => {
-    const engine = new HandlebarsTemplateEngine(tempDir);
-    const result = await engine.render({
+    const engine = createEngine();
+    const service = new TemplateService(engine);
+    const result = await service.render({
       templateName: 'invoice',
       data: { customer: 'Acme Corp', total: 1250.5 },
     });
@@ -49,8 +60,9 @@ describe('HandlebarsTemplateEngine', () => {
   });
 
   it('should render single-file template (name.hbs)', async () => {
-    const engine = new HandlebarsTemplateEngine(tempDir);
-    const result = await engine.render({
+    const engine = createEngine();
+    const service = new TemplateService(engine);
+    const result = await service.render({
       templateName: 'simple-report',
       data: { title: 'Q3 Financials' },
     });
@@ -59,17 +71,19 @@ describe('HandlebarsTemplateEngine', () => {
   });
 
   it('should throw PdfTemplateNotFoundError when template does not exist', async () => {
-    const engine = new HandlebarsTemplateEngine(tempDir);
+    const engine = createEngine();
+    const service = new TemplateService(engine);
     await expect(
-      engine.render({
+      service.render({
         templateName: 'nonexistent-template',
         data: {},
       }),
     ).rejects.toThrow(PdfTemplateNotFoundError);
   });
 
-  it('should support all standard helpers (date, formatNumber, uppercase, lowercase, comparisons)', async () => {
-    const engine = new HandlebarsTemplateEngine(tempDir);
+  it('should support all standard helpers', async () => {
+    const engine = createEngine();
+    const service = new TemplateService(engine);
     const tpl = `
       <span>Date: {{date dateVal}}</span>
       <span>Num: {{formatNumber 1234.5678 2}}</span>
@@ -86,7 +100,7 @@ describe('HandlebarsTemplateEngine', () => {
       {{#if (not isBanned)}}Not banned{{/if}}
     `;
 
-    const html = await engine.render({
+    const html = await service.render({
       templateContent: tpl,
       data: {
         dateVal: new Date('2026-05-15T00:00:00Z'),
@@ -115,13 +129,12 @@ describe('HandlebarsTemplateEngine', () => {
   });
 
   it('should allow registering custom helpers', async () => {
-    const engine = new HandlebarsTemplateEngine(tempDir, { enabled: false }, {
-      helpers: {
-        shout: (txt: unknown) => `${String(txt)}!!!`,
-      },
+    const engine = createEngine(false, {
+      shout: (txt: unknown) => `${String(txt)}!!!`,
     });
+    const service = new TemplateService(engine);
 
-    const html = await engine.render({
+    const html = await service.render({
       templateContent: '{{shout greeting}}',
       data: { greeting: 'Welcome' },
     });
@@ -130,14 +143,15 @@ describe('HandlebarsTemplateEngine', () => {
   });
 
   it('should support template caching when enabled', async () => {
-    const engine = new HandlebarsTemplateEngine(tempDir, { enabled: true });
+    const engine = createEngine(true);
+    const service = new TemplateService(engine);
 
-    const render1 = await engine.render({
+    const render1 = await service.render({
       templateName: 'simple-report',
       data: { title: 'First Render' },
     });
 
-    const render2 = await engine.render({
+    const render2 = await service.render({
       templateName: 'simple-report',
       data: { title: 'Second Render' },
     });
@@ -145,7 +159,6 @@ describe('HandlebarsTemplateEngine', () => {
     expect(render1).toContain('First Render');
     expect(render2).toContain('Second Render');
 
-    engine.clearCache();
+    service.clearCache();
   });
 });
-

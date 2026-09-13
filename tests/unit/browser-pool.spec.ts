@@ -1,4 +1,5 @@
-import { BrowserPool } from '../../src/browser/browser-pool';
+import { BrowserPoolService } from '../../src/browser/browser-pool.service';
+import { BrowserManagerService } from '../../src/browser/browser-manager.service';
 import { chromium, Browser } from 'playwright-core';
 
 jest.mock('playwright-core', () => ({
@@ -13,13 +14,7 @@ jest.mock('playwright-core', () => ({
   },
 }));
 
-describe('BrowserPool', () => {
-  let mockBrowser: {
-    isConnected: jest.Mock;
-    close: jest.Mock;
-    on: jest.Mock;
-  };
-
+describe('BrowserPoolService', () => {
   const closeSpies: jest.Mock[] = [];
 
   beforeEach(() => {
@@ -36,8 +31,13 @@ describe('BrowserPool', () => {
     });
   });
 
+  const createPool = (opts = {}, onEvent?: (e: unknown) => void) => {
+    const manager = new BrowserManagerService({ browser: opts });
+    return new BrowserPoolService(manager, { browser: opts, onEvent: onEvent as never });
+  };
+
   it('should initialize with configured minimum browsers', async () => {
-    const pool = new BrowserPool({ min: 2, max: 5 });
+    const pool = createPool({ min: 2, max: 5 });
     await pool.initialize();
 
     expect(chromium.launch).toHaveBeenCalledTimes(2);
@@ -45,7 +45,7 @@ describe('BrowserPool', () => {
   });
 
   it('should acquire and reuse an existing browser', async () => {
-    const pool = new BrowserPool({ min: 1, max: 2 });
+    const pool = createPool({ min: 1, max: 2 });
     await pool.initialize();
 
     const pooled1 = await pool.acquire();
@@ -55,7 +55,6 @@ describe('BrowserPool', () => {
     await pool.release(pooled1);
     expect(pooled1.inUseCount).toBe(0);
 
-    // Next acquire should reuse the same browser
     const pooled2 = await pool.acquire();
     expect(pooled2.id).toBe(pooled1.id);
     expect(pooled2.operationsCount).toBe(2);
@@ -66,19 +65,18 @@ describe('BrowserPool', () => {
 
   it('should recycle browser when maxOperationsPerBrowser is reached', async () => {
     const events: string[] = [];
-    const pool = new BrowserPool(
+    const pool = createPool(
       { min: 1, max: 2, maxOperationsPerBrowser: 2 },
-      (evt) => events.push(evt.type),
+      (evt: unknown) => events.push((evt as { type: string }).type),
     );
     await pool.initialize();
 
-    const b1 = await pool.acquire(); // op 1
+    const b1 = await pool.acquire();
     await pool.release(b1);
 
-    const b2 = await pool.acquire(); // op 2
+    const b2 = await pool.acquire();
     expect(b2.id).toBe(b1.id);
 
-    // Releasing after reaching maxOperations should trigger recycling
     await pool.release(b2);
 
     expect(events).toContain('browser.recycled');
@@ -88,15 +86,13 @@ describe('BrowserPool', () => {
   });
 
   it('should clean up disconnected browser on acquire', async () => {
-    const pool = new BrowserPool({ min: 1, max: 2 });
+    const pool = createPool({ min: 1, max: 2 });
     await pool.initialize();
 
     const pooled = await pool.acquire();
-    // Mark acquired browser as disconnected
     (pooled.browser.isConnected as jest.Mock).mockReturnValue(false);
     await pool.release(pooled);
 
-    // Next acquire should detect disconnected browser, discard it, and launch fresh replacement
     const freshBrowser = await pool.acquire();
     expect(freshBrowser).toBeDefined();
     expect(chromium.launch).toHaveBeenCalledTimes(2);
@@ -105,7 +101,7 @@ describe('BrowserPool', () => {
   });
 
   it('should close all browsers on closeAll', async () => {
-    const pool = new BrowserPool({ min: 2, max: 3 });
+    const pool = createPool({ min: 2, max: 3 });
     await pool.initialize();
 
     await pool.closeAll();

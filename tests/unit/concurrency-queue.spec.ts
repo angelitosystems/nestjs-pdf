@@ -1,9 +1,9 @@
-import { ConcurrencyQueue } from '../../src/utils/concurrency-queue';
-import { PdfAbortError, PdfTimeoutError } from '../../src/pdf/pdf.exceptions';
+import { ConcurrencyQueueService } from '../../src/queue/concurrency-queue.service';
+import { PdfAbortError, PdfTimeoutError } from '../../src/common/exceptions/pdf.exceptions';
 
-describe('ConcurrencyQueue', () => {
+describe('ConcurrencyQueueService', () => {
   it('should enforce concurrency limit', async () => {
-    const queue = new ConcurrencyQueue({ concurrency: 2 });
+    const queue = new ConcurrencyQueueService({ concurrency: 2 });
     let maxRunning = 0;
     let currentlyRunning = 0;
 
@@ -31,7 +31,7 @@ describe('ConcurrencyQueue', () => {
   });
 
   it('should process tasks in FIFO order', async () => {
-    const queue = new ConcurrencyQueue({ concurrency: 1 });
+    const queue = new ConcurrencyQueueService({ concurrency: 1 });
     const executedOrder: number[] = [];
 
     const task1 = queue.run(async () => {
@@ -52,15 +52,13 @@ describe('ConcurrencyQueue', () => {
   });
 
   it('should reject with PdfTimeoutError when waiting in queue exceeds queueTimeout', async () => {
-    const queue = new ConcurrencyQueue({ concurrency: 1, queueTimeout: 50 });
+    const queue = new ConcurrencyQueueService({ queue: { concurrency: 1, queueTimeout: 50 } });
 
-    // Task 1 blocks the queue for 100ms
     const blocker = queue.run(async () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
       return 'ok';
     });
 
-    // Task 2 will wait more than 50ms in queue, so it should time out
     const timedOutTask = queue.run(async () => 'will not run');
 
     await expect(timedOutTask).rejects.toThrow(PdfTimeoutError);
@@ -68,7 +66,7 @@ describe('ConcurrencyQueue', () => {
   });
 
   it('should reject with PdfAbortError when signal is already aborted', async () => {
-    const queue = new ConcurrencyQueue({ concurrency: 2 });
+    const queue = new ConcurrencyQueueService({ concurrency: 2 });
     const controller = new AbortController();
     controller.abort();
 
@@ -78,10 +76,9 @@ describe('ConcurrencyQueue', () => {
   });
 
   it('should reject with PdfAbortError when signal is aborted while waiting in queue', async () => {
-    const queue = new ConcurrencyQueue({ concurrency: 1 });
+    const queue = new ConcurrencyQueueService({ concurrency: 1 });
     const controller = new AbortController();
 
-    // Blocker
     const blocker = queue.run(async () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
       return 'ok';
@@ -89,7 +86,6 @@ describe('ConcurrencyQueue', () => {
 
     const waitingTask = queue.run(async () => 'ok', { signal: controller.signal });
 
-    // Abort while task is waiting in queue
     setTimeout(() => {
       controller.abort();
     }, 10);
@@ -99,7 +95,7 @@ describe('ConcurrencyQueue', () => {
   });
 
   it('should release concurrency slot and continue next task even if current task throws', async () => {
-    const queue = new ConcurrencyQueue({ concurrency: 1 });
+    const queue = new ConcurrencyQueueService({ concurrency: 1 });
 
     const failingTask = queue.run(async () => {
       throw new Error('Task failure');
@@ -114,8 +110,8 @@ describe('ConcurrencyQueue', () => {
     expect(queue.runningCount).toBe(0);
   });
 
-  it('should reject pending tasks when queue is destroyed', async () => {
-    const queue = new ConcurrencyQueue({ concurrency: 1 });
+  it('should reject pending tasks when destroyed on module destroy', async () => {
+    const queue = new ConcurrencyQueueService({ concurrency: 1 });
 
     const blocker = queue.run(async () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
@@ -124,10 +120,9 @@ describe('ConcurrencyQueue', () => {
 
     const queuedTask = queue.run(async () => 'pending');
 
-    queue.destroy('Module shut down');
+    queue.onModuleDestroy();
 
     await expect(queuedTask).rejects.toThrow(PdfAbortError);
     await expect(blocker).resolves.toBe('blocker');
   });
 });
-

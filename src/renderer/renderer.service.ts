@@ -1,39 +1,40 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Inject, Injectable, Optional } from '@nestjs/common';
-import { TEMPLATE_ENGINE, PDF_ENGINE, PDF_MODULE_OPTIONS, ASSET_MANAGER } from '../pdf/pdf.constants';
-import { TemplateEngine } from '../templates/template-engine.interface';
-import { PdfEngine } from '../engines/pdf-engine.interface';
-import { AssetManager } from '../assets/asset-manager';
-import { GeneratePdfOptions, PdfHeaderFooter, PdfModuleOptions, PdfWatermark } from '../pdf/pdf.types';
-import { PdfRenderingError } from '../pdf/pdf.exceptions';
+import { PDF_ENGINE, PDF_MODULE_OPTIONS } from '../common/constants/tokens.constants';
+import { GeneratePdfOptions, PdfHeaderFooter, PdfModuleOptions, PdfWatermark } from '../common/types/pdf.types';
+import { PdfRenderingError } from '../common/exceptions/pdf.exceptions';
+import { TemplateService } from '../template/template.service';
+import { AssetService } from '../asset/asset.service';
+import { PdfSecurityService } from '../security/security.service';
+import { PdfEngine } from '../engine/pdf-engine.interface';
 
 @Injectable()
-export class RendererService {
+export class PdfRendererService {
+  private readonly defaultTemplatesPath: string;
+
   constructor(
-    @Inject(TEMPLATE_ENGINE)
-    private readonly templateEngine: TemplateEngine,
+    private readonly templateService: TemplateService,
+    private readonly assetService: AssetService,
+    private readonly securityService: PdfSecurityService,
     @Inject(PDF_ENGINE)
-    private readonly pdfEngine: PdfEngine,
-    @Inject(ASSET_MANAGER)
-    private readonly assetManager: AssetManager,
+    private readonly engine: PdfEngine,
     @Optional()
     @Inject(PDF_MODULE_OPTIONS)
-    private readonly moduleOptions: PdfModuleOptions = {},
-  ) {}
+    private readonly moduleOptions?: PdfModuleOptions,
+  ) {
+    this.defaultTemplatesPath = moduleOptions?.templatesPath || './templates';
+  }
 
-  /**
-   * Orchestrates the complete pipeline: templates, CSS, assets, fonts, watermark, headers/footers, and engine rendering.
-   */
-  public async renderPdf(options: GeneratePdfOptions): Promise<Buffer> {
-    const templatesBasePath = path.resolve(this.moduleOptions.templatesPath || './templates');
+  public async render(options: GeneratePdfOptions): Promise<Buffer> {
+    const templatesBasePath = path.resolve(this.defaultTemplatesPath);
     let templateDir: string | undefined;
 
     // 1. Resolve HTML content
     let htmlContent: string;
     if (options.html) {
       if (options.data && Object.keys(options.data).length > 0) {
-        htmlContent = await this.templateEngine.render({
+        htmlContent = await this.templateService.render({
           templateContent: options.html,
           data: options.data,
         });
@@ -49,7 +50,7 @@ export class RendererService {
         templateDir = templatesBasePath;
       }
 
-      htmlContent = await this.templateEngine.render({
+      htmlContent = await this.templateService.render({
         templateName,
         data: options.data,
         templatesPath: templatesBasePath,
@@ -61,7 +62,7 @@ export class RendererService {
     // 2. Gather Stylesheets
     const styles: string[] = [];
 
-    // Base template styles.css if existing
+    // Template styles.css if present
     if (templateDir) {
       const cssPath = path.join(templateDir, 'styles.css');
       if (fs.existsSync(cssPath)) {
@@ -77,7 +78,7 @@ export class RendererService {
     // Custom fonts
     if (options.fonts && options.fonts.length > 0) {
       for (const font of options.fonts) {
-        const fontCss = await this.assetManager.resolveFont(font, templateDir);
+        const fontCss = await this.assetService.resolveFont(font, templateDir);
         styles.push(fontCss);
       }
     }
@@ -87,7 +88,7 @@ export class RendererService {
       styles.push(options.css);
     }
 
-    // Watermark CSS and element
+    // Watermark CSS & HTML
     let watermarkHtml = '';
     if (options.watermark) {
       const { css, html } = this.buildWatermark(options.watermark);
@@ -95,7 +96,7 @@ export class RendererService {
       watermarkHtml = html;
     }
 
-    // Standard print CSS rules for clean page breaks
+    // Standard print CSS rules
     styles.push(`
       @media print {
         .page-break-before { page-break-before: always; }
@@ -104,30 +105,35 @@ export class RendererService {
       }
     `);
 
-    // 3. Assemble complete HTML document
+    // 3. Assemble document
     const fullHtml = this.assembleDocument(htmlContent, styles.join('\n'), watermarkHtml);
 
-    // 4. Process Header and Footer templates
+    // 4. Header and Footer
     const headerTemplate = await this.buildHeaderFooterHtml(
       options.header,
       options.data,
       templatesBasePath,
-      'header',
     );
     const footerTemplate = await this.buildHeaderFooterHtml(
       options.footer,
       options.data,
       templatesBasePath,
-      'footer',
     );
 
-    // 5. Send to PDF Engine
-    return await this.pdfEngine.render({
+    // 5. Delegate to engine
+    return await this.engine.render({
       html: fullHtml,
-      format: options.format || this.moduleOptions.defaultFormat || 'A4',
+      format: options.format || this.moduleOptions?.defaults?.format || this.moduleOptions?.defaultFormat || 'A4',
       dimensions: options.dimensions,
-      orientation: options.orientation || this.moduleOptions.defaultOrientation || 'portrait',
-      margins: options.margins || this.moduleOptions.defaultMargins,
+      orientation:
+        options.orientation ||
+        this.moduleOptions?.defaults?.orientation ||
+        this.moduleOptions?.defaultOrientation ||
+        'portrait',
+      margins:
+        options.margins ||
+        this.moduleOptions?.defaults?.margins ||
+        this.moduleOptions?.defaultMargins,
       printBackground: options.printBackground ?? true,
       preferCSSPageSize: options.preferCSSPageSize ?? true,
       scale: options.scale,
@@ -136,13 +142,12 @@ export class RendererService {
       footerTemplate,
       displayHeaderFooter: Boolean(headerTemplate || footerTemplate),
       metadata: options.metadata,
-      timeout: options.timeout || this.moduleOptions.timeout,
+      timeout: options.timeout || this.moduleOptions?.timeout,
       signal: options.signal,
     });
   }
 
   private assembleDocument(content: string, css: string, watermarkHtml: string): string {
-    // If user provided a complete document with <html> and <body>, inject styles and watermark
     if (/<html[\s\S]*>/i.test(content)) {
       let result = content;
       if (css.trim()) {
@@ -163,7 +168,6 @@ export class RendererService {
       return result;
     }
 
-    // Otherwise wrap content into a standard HTML5 structure
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -219,7 +223,6 @@ export class RendererService {
     config: PdfHeaderFooter | undefined,
     parentData: Record<string, unknown> | undefined,
     templatesPath: string,
-    _type: 'header' | 'footer',
   ): Promise<string | undefined> {
     if (!config) return undefined;
 
@@ -228,7 +231,7 @@ export class RendererService {
     if (config.html) {
       content = config.html;
     } else if (config.template) {
-      content = await this.templateEngine.render({
+      content = await this.templateService.render({
         templateName: config.template,
         data: { ...parentData, ...config.data },
         templatesPath,
@@ -238,7 +241,6 @@ export class RendererService {
         '<div style="font-size: 9px; width: 100%; text-align: center; color: #777;">Página <span class="pageNumber"></span> de <span class="totalPages"></span></div>';
     }
 
-    // Convert Handlebars-style {{pageNumber}} & {{totalPages}} to Chromium's native span classes
     content = content
       .replace(/{{\s*pageNumber\s*}}/g, '<span class="pageNumber"></span>')
       .replace(/{{\s*totalPages\s*}}/g, '<span class="totalPages"></span>');
@@ -247,7 +249,6 @@ export class RendererService {
       return undefined;
     }
 
-    // Chromium header/footer requires font-size and margin in template or it defaults to unstyled tiny text
     return `
       <div style="font-size: 10px; width: 100%; margin: 0 15mm; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact;">
         ${content}
