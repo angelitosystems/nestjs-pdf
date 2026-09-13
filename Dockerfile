@@ -53,3 +53,4 @@ USER nestjs
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 
 CMD ["node", "dist/main.js"]
+

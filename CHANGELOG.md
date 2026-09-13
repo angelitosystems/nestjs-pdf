@@ -40,3 +40,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - GitHub Actions workflows for continuous integration (Node.js 18, 20, 22), automated security scanning (CodeQL + audit), trusted NPM OIDC publishing with provenance, and GitHub Pages documentation deployment.
   - Production-ready multi-stage `Dockerfile` with Chromium and `dumb-init`.
   - Standalone documentation portal built with Vite, React, TypeScript, and Tailwind CSS.
+
