@@ -51,6 +51,7 @@
     "format": "prettier --write \"{src,tests,examples}/**/*.ts\"",
     "format:check": "prettier --check \"{src,tests,examples}/**/*.ts\"",
     "typecheck": "tsc --noEmit",
+    "deploy:npm": "node scripts/deploy.mjs",
     "prepublishOnly": "npm run build && npm test"
   },
   "dependencies": {
