@@ -26,3 +26,4 @@ export function Breadcrumbs({ category, item, onGoHome }: BreadcrumbsProps) {
     </nav>
   );
 }
+

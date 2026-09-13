@@ -290,3 +290,4 @@ export function Header({ onOpenSearch, onNavigate, onGoHome }: HeaderProps) {
     </header>
   );
 }
+

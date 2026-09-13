@@ -165,3 +165,4 @@ export function SearchModal({ isOpen, onClose, onSelect }: SearchModalProps) {
     </div>
   );
 }
+

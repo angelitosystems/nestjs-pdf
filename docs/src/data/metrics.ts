@@ -53,3 +53,4 @@ export const metricsData: MetricItem[] = [
     subEs: 'Core liviano sin binarios pesados incluidos',
   },
 ];
+

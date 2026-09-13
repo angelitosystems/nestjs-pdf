@@ -1,6 +1,6 @@
 import { CodeBlock } from '../../components/CodeBlock';
 import { useI18n } from '../../hooks/useI18n';
-import { ShieldCheck, Lock, AlertOctagon } from 'lucide-react';
+import { ShieldCheck, Lock } from 'lucide-react';
 
 export function SecuritySection() {
   const { locale } = useI18n();

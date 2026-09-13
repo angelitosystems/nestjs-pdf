@@ -188,3 +188,4 @@ export const searchIndex: SearchResult[] = [
     keywords: ['docker', 'container', 'dockerfile', 'dumb-init', 'production', 'chromium'],
   },
 ];
+

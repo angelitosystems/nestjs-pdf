@@ -1,6 +1,6 @@
 import { CodeBlock } from '../../components/CodeBlock';
 import { useI18n } from '../../hooks/useI18n';
-import { HardDrive, Cloud, Layers } from 'lucide-react';
+import { HardDrive, Layers } from 'lucide-react';
 
 export function StorageSection() {
   const { locale } = useI18n();

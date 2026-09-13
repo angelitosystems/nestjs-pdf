@@ -47,3 +47,4 @@ export function RootLayout({ children, onNavigate, onGoHome }: RootLayoutProps) 
     </div>
   );
 }
+

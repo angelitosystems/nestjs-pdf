@@ -104,3 +104,4 @@ export function Sidebar({ activeSectionId, activeItemId, onSelect }: SidebarProp
     </aside>
   );
 }
+
