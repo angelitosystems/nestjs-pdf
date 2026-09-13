@@ -115,3 +115,4 @@ export class PdfConfigurationError extends PdfError {
     super(`Configuration error: ${message}`, 'CONFIGURATION_ERROR');
   }
 }
+

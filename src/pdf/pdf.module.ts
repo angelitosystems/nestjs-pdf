@@ -1,10 +1,5 @@
 import { DynamicModule, Global, Module, Provider, Type } from '@nestjs/common';
-import {
-  PDF_ENGINE,
-  PDF_MODULE_OPTIONS,
-  STORAGE_ADAPTER,
-  TEMPLATE_ENGINE,
-} from '../common/constants/tokens.constants';
+import { PDF_MODULE_OPTIONS } from '../common/constants/tokens.constants';
 import {
   PdfModuleAsyncOptions,
   PdfModuleOptions,
@@ -41,9 +36,6 @@ import { PdfService } from './pdf.service';
     StorageModule,
     BrowserModule,
     QueueModule,
-    PDF_ENGINE,
-    TEMPLATE_ENGINE,
-    STORAGE_ADAPTER,
   ],
 })
 export class PdfModule {
@@ -55,6 +47,7 @@ export class PdfModule {
 
     return {
       module: PdfModule,
+      imports: this.getDefaultImports(),
       providers: [optionsProvider, PdfService],
       exports: [
         PdfService,
@@ -64,9 +57,6 @@ export class PdfModule {
         StorageModule,
         BrowserModule,
         QueueModule,
-        PDF_ENGINE,
-        TEMPLATE_ENGINE,
-        STORAGE_ADAPTER,
         PDF_MODULE_OPTIONS,
       ],
     };
@@ -77,7 +67,7 @@ export class PdfModule {
 
     return {
       module: PdfModule,
-      imports: asyncOptions.imports || [],
+      imports: [...this.getDefaultImports(), ...(asyncOptions.imports || [])],
       providers: [...asyncProviders, PdfService],
       exports: [
         PdfService,
@@ -87,9 +77,6 @@ export class PdfModule {
         StorageModule,
         BrowserModule,
         QueueModule,
-        PDF_ENGINE,
-        TEMPLATE_ENGINE,
-        STORAGE_ADAPTER,
         PDF_MODULE_OPTIONS,
       ],
     };
@@ -131,6 +118,19 @@ export class PdfModule {
         provide: PDF_MODULE_OPTIONS,
         useValue: {},
       },
+    ];
+  }
+
+  private static getDefaultImports() {
+    return [
+      SecurityModule,
+      AssetModule,
+      TemplateModule,
+      BrowserModule,
+      EngineModule,
+      StorageModule,
+      QueueModule,
+      RendererModule,
     ];
   }
 }

@@ -3,3 +3,4 @@ export interface SecurityValidationOptions {
   allowExternalResources?: boolean;
   allowedAssetPaths?: string[];
 }
+

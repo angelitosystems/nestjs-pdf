@@ -30,3 +30,4 @@ export class StorageService {
     return this.adapter;
   }
 }
+

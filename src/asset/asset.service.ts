@@ -27,3 +27,4 @@ export class AssetService {
     return await this.manager.resolveFont(font, contextDir);
   }
 }
+

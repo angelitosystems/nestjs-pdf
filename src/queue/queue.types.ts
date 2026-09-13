@@ -9,3 +9,4 @@ export interface QueueOptions {
   onWaiting?: (queueSize: number) => void;
   onCompleted?: () => void;
 }
+

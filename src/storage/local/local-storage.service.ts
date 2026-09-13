@@ -4,7 +4,7 @@ import { Inject, Injectable, Optional } from '@nestjs/common';
 import { StorageAdapter } from '../storage.interface';
 import { StorageSaveOptions } from '../storage.types';
 import { PDF_MODULE_OPTIONS } from '../../common/constants/tokens.constants';
-import { PdfModuleOptions } from '../../common/types/pdf.types';
+import type { PdfModuleOptions } from '../../common/types/pdf.types';
 import { PdfStorageError } from '../../common/exceptions/pdf.exceptions';
 
 @Injectable()
@@ -92,3 +92,4 @@ export class LocalStorageService implements StorageAdapter {
     return path.resolve(destination);
   }
 }
+

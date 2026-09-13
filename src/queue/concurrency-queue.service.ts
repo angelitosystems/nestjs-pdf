@@ -1,6 +1,6 @@
 import { Inject, Injectable, OnModuleDestroy, Optional } from '@nestjs/common';
 import { PDF_MODULE_OPTIONS } from '../common/constants/tokens.constants';
-import { PdfModuleOptions } from '../common/types/pdf.types';
+import type { PdfModuleOptions } from '../common/types/pdf.types';
 import { PdfAbortError, PdfTimeoutError } from '../common/exceptions/pdf.exceptions';
 import { QueueTaskOptions } from './queue.types';
 
@@ -176,3 +176,4 @@ export class ConcurrencyQueueService implements OnModuleDestroy {
     }
   }
 }
+

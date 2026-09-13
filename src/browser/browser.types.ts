@@ -7,3 +7,4 @@ export interface PooledBrowser {
   inUseCount: number;
   createdAt: number;
 }
+

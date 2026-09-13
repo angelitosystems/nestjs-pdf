@@ -11,3 +11,4 @@ import { PdfRendererService } from './renderer.service';
   exports: [PdfRendererService],
 })
 export class RendererModule {}
+

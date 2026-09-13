@@ -92,3 +92,4 @@ export const defaultHandlebarsHelpers: Record<string, (...args: unknown[]) => un
     return !value;
   },
 };
+

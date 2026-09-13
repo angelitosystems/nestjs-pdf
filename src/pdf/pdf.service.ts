@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
-import { GeneratePdfOptions, HttpResponseLike, PdfEvent, PdfModuleOptions, PdfResult, SendHttpOptions } from '../common/types/pdf.types';
+import type { GeneratePdfOptions, HttpResponseLike, PdfEvent, PdfModuleOptions, PdfResult, SendHttpOptions } from '../common/types/pdf.types';
 import { PDF_MODULE_OPTIONS } from '../common/constants/tokens.constants';
 import { PdfRendererService } from '../renderer/renderer.service';
 import { ConcurrencyQueueService } from '../queue/concurrency-queue.service';

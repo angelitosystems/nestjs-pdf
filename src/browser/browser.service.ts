@@ -93,3 +93,4 @@ export class BrowserService {
     return this.pool;
   }
 }
+

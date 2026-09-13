@@ -9,3 +9,4 @@ import { AssetService } from './asset.service';
   exports: [AssetService, AssetManagerService],
 })
 export class AssetModule {}
+

@@ -9,3 +9,4 @@ export function bufferToStream(buffer: Buffer): Readable {
   stream.push(null);
   return stream;
 }
+

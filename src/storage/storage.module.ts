@@ -15,3 +15,4 @@ import { StorageService } from './storage.service';
   exports: [StorageService, STORAGE_ADAPTER, LocalStorageService],
 })
 export class StorageModule {}
+

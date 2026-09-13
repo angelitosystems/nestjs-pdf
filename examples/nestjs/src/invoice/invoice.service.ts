@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PdfResult, PdfService } from '../../../src';
+import { PdfResult, PdfService } from '../../../../src';
 
 export interface InvoiceDto {
   number: string;

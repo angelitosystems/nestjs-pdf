@@ -19,3 +19,4 @@ export interface EngineRenderOptions {
 }
 
 export type PdfEngineOptions = EngineRenderOptions;
+

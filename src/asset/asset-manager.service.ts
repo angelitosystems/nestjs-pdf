@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as mime from 'mime-types';
 import { Inject, Injectable, Optional } from '@nestjs/common';
 import { PDF_MODULE_OPTIONS } from '../common/constants/tokens.constants';
-import { PdfFont, PdfModuleOptions, PdfSecurityOptions } from '../common/types/pdf.types';
+import type { PdfFont, PdfModuleOptions, PdfSecurityOptions } from '../common/types/pdf.types';
 import { PdfAssetError, PdfSecurityError } from '../common/exceptions/pdf.exceptions';
 import { PdfSecurityService } from '../security/security.service';
 import { ResolvedAsset } from './asset.types';
@@ -206,3 +206,4 @@ export class AssetManagerService {
     }
   }
 }
+

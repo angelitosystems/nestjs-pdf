@@ -28,3 +28,4 @@ export const DEFAULT_POOL_MIN = 1;
 export const DEFAULT_POOL_MAX = 5;
 export const DEFAULT_MAX_OPERATIONS_PER_BROWSER = 100;
 export const PDF_MIME_TYPE = 'application/pdf';
+

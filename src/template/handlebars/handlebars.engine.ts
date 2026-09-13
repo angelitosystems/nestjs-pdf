@@ -6,7 +6,7 @@ import { TemplateEngine } from '../template-engine.interface';
 import { RenderTemplateOptions } from '../template.types';
 import { defaultHandlebarsHelpers } from './handlebars.helpers';
 import { PDF_MODULE_OPTIONS } from '../../common/constants/tokens.constants';
-import { HandlebarsConfig, PdfCacheOptions, PdfModuleOptions } from '../../common/types/pdf.types';
+import type { PdfCacheOptions, PdfModuleOptions } from '../../common/types/pdf.types';
 import { PdfRenderingError, PdfTemplateNotFoundError } from '../../common/exceptions/pdf.exceptions';
 import { PdfSecurityService } from '../../security/security.service';
 
@@ -154,3 +154,4 @@ export class HandlebarsTemplateEngine implements TemplateEngine {
     throw new PdfTemplateNotFoundError(templateName, candidates);
   }
 }
+

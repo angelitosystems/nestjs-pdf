@@ -8,3 +8,4 @@ export interface RenderTemplateOptions {
 export interface CompiledTemplate {
   (data?: Record<string, unknown>): string;
 }
+

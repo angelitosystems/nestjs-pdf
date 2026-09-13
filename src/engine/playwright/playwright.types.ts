@@ -4,3 +4,4 @@ export interface PlaywrightEngineConfig {
   browser?: BrowserPoolOptions;
   timeout?: number;
 }
+

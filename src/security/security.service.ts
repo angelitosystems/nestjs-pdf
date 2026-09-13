@@ -1,7 +1,7 @@
 import { Inject, Injectable, Optional } from '@nestjs/common';
 import * as path from 'path';
 import { PDF_MODULE_OPTIONS } from '../common/constants/tokens.constants';
-import { PdfModuleOptions, PdfSecurityOptions } from '../common/types/pdf.types';
+import type { PdfModuleOptions, PdfSecurityOptions } from '../common/types/pdf.types';
 import { SecurityUtils } from './security.utils';
 
 @Injectable()
@@ -48,3 +48,4 @@ export class PdfSecurityService {
     return SecurityUtils.isPrivateOrReservedIp(ip);
   }
 }
+

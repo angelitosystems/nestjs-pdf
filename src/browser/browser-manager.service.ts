@@ -1,7 +1,7 @@
 import { Inject, Injectable, Optional } from '@nestjs/common';
 import { chromium, firefox, webkit, Browser, BrowserType, LaunchOptions } from 'playwright-core';
 import { PDF_MODULE_OPTIONS } from '../common/constants/tokens.constants';
-import { BrowserPoolOptions, PdfModuleOptions } from '../common/types/pdf.types';
+import type { BrowserPoolOptions, PdfModuleOptions } from '../common/types/pdf.types';
 import { PdfEngineError } from '../common/exceptions/pdf.exceptions';
 
 @Injectable()
@@ -73,3 +73,4 @@ export class BrowserManagerService {
     }
   }
 }
+

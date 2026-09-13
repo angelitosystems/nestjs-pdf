@@ -351,3 +351,4 @@ export interface PdfResult {
   /** Sends the PDF through an HTTP response (Express or Fastify) */
   send(response: HttpResponseLike, options?: SendHttpOptions): Promise<void>;
 }
+

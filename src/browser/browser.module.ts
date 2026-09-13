@@ -8,3 +8,4 @@ import { BrowserService } from './browser.service';
   exports: [BrowserService, BrowserPoolService, BrowserManagerService],
 })
 export class BrowserModule {}
+

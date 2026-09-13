@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Inject, Injectable, Optional } from '@nestjs/common';
 import { PDF_ENGINE, PDF_MODULE_OPTIONS } from '../common/constants/tokens.constants';
-import { GeneratePdfOptions, PdfHeaderFooter, PdfModuleOptions, PdfWatermark } from '../common/types/pdf.types';
+import type { GeneratePdfOptions, PdfHeaderFooter, PdfModuleOptions, PdfWatermark } from '../common/types/pdf.types';
 import { PdfRenderingError } from '../common/exceptions/pdf.exceptions';
 import { TemplateService } from '../template/template.service';
 import { AssetService } from '../asset/asset.service';
@@ -265,3 +265,4 @@ export class PdfRendererService {
       .replace(/'/g, '&#039;');
   }
 }
+

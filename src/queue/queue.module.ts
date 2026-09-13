@@ -6,3 +6,4 @@ import { ConcurrencyQueueService } from './concurrency-queue.service';
   exports: [ConcurrencyQueueService],
 })
 export class QueueModule {}
+

@@ -3,3 +3,4 @@ export interface ResolvedAsset {
   mimeType: string;
   dataUri: string;
 }
+

@@ -1,6 +1,6 @@
 import { Inject, Injectable, OnModuleDestroy, OnModuleInit, Optional } from '@nestjs/common';
 import { PDF_MODULE_OPTIONS } from '../common/constants/tokens.constants';
-import { PdfModuleOptions } from '../common/types/pdf.types';
+import type { PdfModuleOptions } from '../common/types/pdf.types';
 import { PdfEngineError } from '../common/exceptions/pdf.exceptions';
 import { BrowserManagerService } from './browser-manager.service';
 import { PooledBrowser } from './browser.types';
@@ -183,3 +183,4 @@ export class BrowserPoolService implements OnModuleInit, OnModuleDestroy {
     }
   }
 }
+
