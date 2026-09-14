@@ -29,9 +29,9 @@ export const searchIndex: SearchResult[] = [
     titleEs: 'Instalación',
     categoryEn: 'Getting Started',
     categoryEs: 'Primeros Pasos',
-    snippetEn: 'Install @angelitosystems/nestjs-pdf and playwright-core with npm, pnpm, yarn, or bun.',
-    snippetEs: 'Instala @angelitosystems/nestjs-pdf y playwright-core con npm, pnpm, yarn o bun.',
-    keywords: ['install', 'setup', 'npm', 'playwright install chromium', 'dependencies'],
+    snippetEn: 'Install @angelitosystems/nestjs-pdf with npm, pnpm, yarn, or bun.',
+    snippetEs: 'Instala @angelitosystems/nestjs-pdf con npm, pnpm, yarn o bun.',
+    keywords: ['install', 'setup', 'npm', 'bun', 'playwright-core', 'doctor', 'dependencies'],
   },
   {
     id: 'quick-start',

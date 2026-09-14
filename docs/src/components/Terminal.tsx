@@ -9,22 +9,22 @@ export function Terminal() {
   const [copied, setCopied] = useState(false);
   const { t } = useI18n();
 
-  const commands: Record<PackageManager, { install: string; playwright: string }> = {
+  const commands: Record<PackageManager, { install: string; doctor: string }> = {
     npm: {
-      install: 'npm install @angelitosystems/nestjs-pdf playwright-core',
-      playwright: 'npx playwright install chromium',
+      install: 'npm install @angelitosystems/nestjs-pdf',
+      doctor: 'npx angelito-pdf doctor',
     },
     pnpm: {
-      install: 'pnpm add @angelitosystems/nestjs-pdf playwright-core',
-      playwright: 'pnpm exec playwright install chromium',
+      install: 'pnpm add @angelitosystems/nestjs-pdf',
+      doctor: 'pnpm dlx angelito-pdf doctor',
     },
     yarn: {
-      install: 'yarn add @angelitosystems/nestjs-pdf playwright-core',
-      playwright: 'yarn playwright install chromium',
+      install: 'yarn add @angelitosystems/nestjs-pdf',
+      doctor: 'yarn dlx angelito-pdf doctor',
     },
     bun: {
-      install: 'bun add @angelitosystems/nestjs-pdf playwright-core',
-      playwright: 'bunx playwright install chromium',
+      install: 'bun add @angelitosystems/nestjs-pdf',
+      doctor: 'bunx angelito-pdf doctor',
     },
   };
 
@@ -111,11 +111,11 @@ export function Terminal() {
           </p>
         </div>
 
-        {/* Command 2: Playwright */}
+        {/* Command 2: Doctor */}
         <div className="pt-2 border-t border-slate-900 flex items-center gap-2 text-slate-400 text-xs">
           <span className="text-emerald-400 font-bold">$</span>
-          <span className="text-slate-300">{commands[pm].playwright}</span>
-          <span className="text-slate-500 ml-auto hidden sm:inline-block">// downloads Chromium</span>
+          <span className="text-slate-300">{commands[pm].doctor}</span>
+          <span className="text-slate-500 ml-auto hidden sm:inline-block">// checks installed browser</span>
         </div>
       </div>
     </div>
