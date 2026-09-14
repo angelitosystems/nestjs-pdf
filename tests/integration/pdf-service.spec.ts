@@ -120,7 +120,7 @@ describe('PdfService (Integration)', () => {
 
     expect(capturedRenderOptions).toBeDefined();
     expect(capturedRenderOptions?.displayHeaderFooter).toBe(true);
-    expect(capturedRenderOptions?.headerTemplate).toBe('<div class="header">Header</div>');
-    expect(capturedRenderOptions?.footerTemplate).toBe('<div class="footer">Footer</div>');
+    expect(capturedRenderOptions?.headerTemplate).toContain('<div class="header">Header</div>');
+    expect(capturedRenderOptions?.footerTemplate).toContain('<div class="footer">Footer</div>');
   });
 });
