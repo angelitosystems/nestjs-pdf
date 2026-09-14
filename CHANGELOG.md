@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.3] - 2026-09-14
+
+### Changed
+- Extended `peerDependencies` range for `@nestjs/common` and `@nestjs/core` to officially support NestJS v12 (`^12.0.0`).
+
+## [0.1.2] - 2026-09-13
+
+### Changed
+- Documentation website and assets updates.
+
 ## [0.1.0] - 2026-09-13
 
 ### Added
