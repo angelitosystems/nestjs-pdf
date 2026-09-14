@@ -1,55 +1,42 @@
 import { Inject, Injectable, Optional } from '@nestjs/common';
-import { chromium, firefox, webkit, Browser, BrowserType, LaunchOptions } from 'playwright-core';
+import { Browser } from 'playwright-core';
 import { PDF_MODULE_OPTIONS } from '../common/constants/tokens.constants';
-import type { BrowserPoolOptions, PdfModuleOptions } from '../common/types/pdf.types';
-import { PdfEngineError } from '../common/exceptions/pdf.exceptions';
+import type { PdfModuleOptions } from '../common/types/pdf.types';
+import { BrowserLauncher } from './browser-launcher';
 
 @Injectable()
 export class BrowserManagerService {
-  private readonly browserOptions?: BrowserPoolOptions;
+  private readonly launcher: BrowserLauncher;
   private browserCounter = 0;
 
   constructor(
     @Optional()
+    launcherOrOptions?: BrowserLauncher | PdfModuleOptions,
+    @Optional()
     @Inject(PDF_MODULE_OPTIONS)
-    private readonly moduleOptions?: PdfModuleOptions,
+    moduleOptions?: PdfModuleOptions,
   ) {
-    this.browserOptions = moduleOptions?.browser;
+    if (launcherOrOptions && typeof (launcherOrOptions as BrowserLauncher).launch === 'function') {
+      this.launcher = launcherOrOptions as BrowserLauncher;
+    } else {
+      const opts = (launcherOrOptions as PdfModuleOptions) || moduleOptions;
+      this.launcher = new BrowserLauncher(opts);
+    }
   }
 
+  /**
+   * Launches a new browser instance managed by this service.
+   */
   public async launchBrowser(): Promise<{ id: string; browser: Browser }> {
-    const browserType = this.resolveBrowserType();
-    const launchOptions: LaunchOptions = {
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-        '--no-zygote',
-        '--font-render-hinting=medium',
-      ],
-      ...this.browserOptions?.launchOptions,
-    };
-
-    if (this.browserOptions?.executablePath) {
-      launchOptions.executablePath = this.browserOptions.executablePath;
-    }
-
-    try {
-      const browser = await browserType.launch(launchOptions);
-      this.browserCounter++;
-      const id = `browser_${this.browserCounter}_${Date.now()}`;
-      return { id, browser };
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err));
-      throw new PdfEngineError(
-        `Failed to launch Playwright browser. Ensure Chromium is installed via "npx playwright install chromium" or provide executablePath. Details: ${error.message}`,
-        error,
-      );
-    }
+    const browser = await this.launcher.launch();
+    this.browserCounter++;
+    const id = `browser_${this.browserCounter}_${Date.now()}`;
+    return { id, browser };
   }
 
+  /**
+   * Closes a browser instance safely if connected.
+   */
   public async closeBrowser(browser: Browser): Promise<void> {
     try {
       if (browser.isConnected()) {
@@ -60,17 +47,10 @@ export class BrowserManagerService {
     }
   }
 
-  private resolveBrowserType(): BrowserType {
-    const type = this.browserOptions?.browserType ?? 'chromium';
-    switch (type) {
-      case 'firefox':
-        return firefox;
-      case 'webkit':
-        return webkit;
-      case 'chromium':
-      default:
-        return chromium;
-    }
+  /**
+   * Exposes the underlying launcher instance.
+   */
+  public getLauncher(): BrowserLauncher {
+    return this.launcher;
   }
 }
-

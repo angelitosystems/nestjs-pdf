@@ -20,11 +20,12 @@ export class BrowserPoolService implements OnModuleInit, OnModuleDestroy {
     @Inject(PDF_MODULE_OPTIONS)
     private readonly moduleOptions?: PdfModuleOptions,
   ) {
-    this.min = Math.max(0, moduleOptions?.browser?.min ?? DEFAULT_BROWSER_MIN);
-    this.max = Math.max(Math.max(1, this.min), moduleOptions?.browser?.max ?? DEFAULT_BROWSER_MAX);
+    const poolConfig = moduleOptions?.browser?.pool;
+    this.min = Math.max(0, poolConfig?.min ?? moduleOptions?.browser?.min ?? DEFAULT_BROWSER_MIN);
+    this.max = Math.max(Math.max(1, this.min), poolConfig?.max ?? moduleOptions?.browser?.max ?? DEFAULT_BROWSER_MAX);
     this.maxOperationsPerBrowser = Math.max(
       1,
-      moduleOptions?.browser?.maxOperationsPerBrowser ?? DEFAULT_MAX_OPERATIONS,
+      poolConfig?.maxOperationsPerBrowser ?? moduleOptions?.browser?.maxOperationsPerBrowser ?? DEFAULT_MAX_OPERATIONS,
     );
   }
 

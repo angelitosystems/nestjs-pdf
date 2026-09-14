@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { PdfEngine } from '../pdf-engine.interface';
 import { EngineRenderOptions } from '../engine.types';
 import { BrowserService } from '../../browser/browser.service';
-import { PdfAbortError, PdfEngineError, PdfTimeoutError } from '../../common/exceptions/pdf.exceptions';
+import {
+  PdfAbortError,
+  PdfError,
+  PdfRenderFailedError,
+  PdfTimeoutError,
+} from '../../common/exceptions/pdf.exceptions';
 
 @Injectable()
 export class PlaywrightPdfEngine implements PdfEngine {
@@ -77,6 +82,10 @@ export class PlaywrightPdfEngine implements PdfEngine {
 
           return await page.pdf(pdfParams);
         } catch (err: unknown) {
+          if (err instanceof PdfError) {
+            throw err;
+          }
+
           if (options.signal?.aborted) {
             throw new PdfAbortError();
           }
@@ -86,8 +95,8 @@ export class PlaywrightPdfEngine implements PdfEngine {
             throw new PdfTimeoutError('Playwright rendering', timeout);
           }
 
-          throw new PdfEngineError(
-            `Playwright failed to generate PDF: ${errMsg}`,
+          throw new PdfRenderFailedError(
+            errMsg,
             err instanceof Error ? err : undefined,
           );
         }

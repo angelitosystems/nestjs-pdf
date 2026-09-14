@@ -17,6 +17,10 @@ export { PdfRendererService } from './renderer/renderer.service';
 export { TemplateService } from './template/template.service';
 export { StorageService } from './storage/storage.service';
 export { BrowserService } from './browser/browser.service';
+export { BrowserManagerService } from './browser/browser-manager.service';
+export { BrowserPoolService } from './browser/browser-pool.service';
+export { BrowserLauncher } from './browser/browser-launcher';
+export { BrowserDetector } from './browser/browser-detector';
 export { ConcurrencyQueueService } from './queue/concurrency-queue.service';
 export { PdfSecurityService } from './security/security.service';
 export { AssetService } from './asset/asset.service';
@@ -65,6 +69,9 @@ export type {
   SendHttpOptions,
   HttpResponseLike,
   PdfSecurityOptions,
+  BrowserMode,
+  DetectedBrowser,
+  BrowserPoolConfig,
   BrowserPoolOptions,
   PdfCacheOptions,
   ConcurrencyOptions,
@@ -75,10 +82,17 @@ export type {
   PdfEventType,
   PdfEventListener,
 } from './common/types/pdf.types';
+export type { BrowserDiagnosticResult } from './browser/browser-detector';
 
 // Error Classes
 export {
   PdfError,
+  PdfBrowserError,
+  PdfBrowserNotFoundError,
+  PdfBrowserLaunchFailedError,
+  PdfBrowserExecutableInvalidError,
+  PdfBrowserConnectionFailedError,
+  PdfRenderFailedError,
   PdfTemplateNotFoundError,
   PdfRenderingError,
   PdfTimeoutError,
@@ -89,3 +103,4 @@ export {
   PdfStorageError,
   PdfConfigurationError,
 } from './common/exceptions/pdf.exceptions';
+

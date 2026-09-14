@@ -35,6 +35,9 @@
       "default": "./dist/index.js"
     }
   },
+  "bin": {
+    "angelito-pdf": "./dist/cli.js"
+  },
   "files": [
     "dist",
     "README.md",
@@ -43,6 +46,7 @@
   ],
   "scripts": {
     "build": "tsup",
+    "doctor": "node ./dist/cli.js doctor",
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
