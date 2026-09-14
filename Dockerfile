@@ -1,4 +1,5 @@
 # Multi-stage production Dockerfile for NestJS + Chromium (@angelitosystems/nestjs-pdf)
+# Powered by playwright-core with system Chromium (Zero browser download during npm/bun install)
 
 # ----------------------------------------------------
 # Stage 1: Build & Dependencies
@@ -7,7 +8,7 @@ FROM node:20-bookworm-slim AS builder
 
 WORKDIR /app
 
-# Install build dependencies
+# Install build dependencies (fast installation with playwright-core, no Chromium download)
 COPY package*.json ./
 RUN npm ci
 
@@ -19,7 +20,7 @@ RUN npm run build
 # ----------------------------------------------------
 FROM node:20-bookworm-slim AS runner
 
-# Install system dependencies required by Chromium and dumb-init
+# Install OS-level Chromium and required font packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     dumb-init \
     chromium \
@@ -35,7 +36,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Inform Playwright to use system chromium executable
+# BrowserDetector automatically finds /usr/bin/chromium.
+# You can also set PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH or configure browser.executablePath.
 ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 ENV NODE_ENV=production

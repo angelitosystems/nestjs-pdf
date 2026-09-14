@@ -77,41 +77,86 @@ Powered by `playwright-core` under the hood, it eliminates heavyweight bundling 
 ## 📦 Installation
 
 ```bash
-npm install @angelitosystems/nestjs-pdf playwright-core
+bun add @angelitosystems/nestjs-pdf
+# or
+npm install @angelitosystems/nestjs-pdf
 ```
 
-### Install Chromium for Playwright
+> [!IMPORTANT]
+> **Zero Automatic Downloads**: This package uses `playwright-core` exclusively and **does not** download browsers automatically during installation. A compatible Chromium-based browser (Google Chrome, Microsoft Edge, or Chromium) must be installed on the host or configured through `executablePath`.
 
-Because this package utilizes `playwright-core`, Chromium binaries are not downloaded automatically during `npm install`. Install Chromium explicitly:
+### 🩺 System Doctor CLI
+
+You can verify that your operating system has a compatible browser installed at any time using our built-in CLI:
 
 ```bash
-npx playwright install chromium
+bunx angelito-pdf doctor
+# or
+npx angelito-pdf doctor
 ```
 
-> **Note**: In containerized or CI environments, you can point directly to system-installed Chromium packages (such as `/usr/bin/chromium`) using `browser.launchOptions.executablePath`.
+Output:
+```text
+╭────────────────────────────────────────────╮
+│        Angelito Systems PDF Engine         │
+╰────────────────────────────────────────────╯
+
+✓ @angelitosystems/nestjs-pdf
+✓ playwright-core
+✓ Operating system: Windows (x64)
+✓ Node.js compatible
+
+Browser detection:
+
+✓ Google Chrome
+  C:\Program Files\Google\Chrome\Application\chrome.exe
+✓ Microsoft Edge
+  C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
+
+PDF engine is ready.
+```
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Register the Module
+### 1. Register the Module (Zero Configuration)
+
+If you have Chrome, Edge, or Chromium installed, no browser configuration is needed:
 
 ```typescript
 import { Module } from '@nestjs/common';
 import { PdfModule } from '@angelitosystems/nestjs-pdf';
-import { InvoiceController } from './invoice.controller';
-import { InvoiceService } from './invoice.service';
+
+@Module({
+  imports: [
+    PdfModule.forRoot(),
+  ],
+})
+export class AppModule {}
+```
+
+### Or with Custom Browser Configuration
+
+```typescript
+import { Module } from '@nestjs/common';
+import { PdfModule } from '@angelitosystems/nestjs-pdf';
 
 @Module({
   imports: [
     PdfModule.forRoot({
       templatesPath: './templates',
       concurrency: 5,
-      queueTimeout: 30000,
       browser: {
-        min: 1,
-        max: 3,
-        maxOperationsPerBrowser: 50,
+        mode: 'auto', // 'auto' | 'executable' | 'connect'
+        // Optional explicit path (overrides auto-detection):
+        // Linux: '/usr/bin/chromium'
+        // Windows: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+        pool: {
+          min: 1,
+          max: 5,
+          maxOperationsPerBrowser: 100,
+        },
       },
       security: {
         allowExternalResources: false,
@@ -119,8 +164,6 @@ import { InvoiceService } from './invoice.service';
       },
     }),
   ],
-  controllers: [InvoiceController],
-  providers: [InvoiceService],
 })
 export class AppModule {}
 ```
