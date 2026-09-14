@@ -107,20 +107,54 @@ export interface PdfSecurityOptions {
 }
 
 /**
+ * Browser acquisition mode.
+ */
+export type BrowserMode = 'auto' | 'executable' | 'connect';
+
+/**
+ * Information regarding a detected browser on the host system.
+ */
+export interface DetectedBrowser {
+  name: string;
+  executablePath: string;
+  type: 'chrome' | 'edge' | 'chromium' | 'custom';
+  version?: string;
+}
+
+/**
+ * Browser pool sizing configuration.
+ */
+export interface BrowserPoolConfig {
+  min?: number;
+  max?: number;
+  maxOperationsPerBrowser?: number;
+}
+
+/**
  * Browser Pool and process configuration.
  */
 export interface BrowserPoolOptions {
+  /** Acquisition mode: 'auto' | 'executable' | 'connect' (default: 'auto') */
+  mode?: BrowserMode;
+  /** Whether to automatically search for installed browsers when executablePath is unset (default: true) */
+  autoDetect?: boolean;
+  /** Custom executable path for Chromium-based browser */
+  executablePath?: string;
+  /** Remote WebSocket or CDP endpoint for 'connect' mode */
+  endpoint?: string;
+  /** Alias for endpoint */
+  cdpUrl?: string;
+  /** Nested browser pool sizing settings */
+  pool?: BrowserPoolConfig;
   /** Minimum number of browser instances kept warm (default: 1) */
   min?: number;
   /** Maximum number of browser instances in pool (default: 5) */
   max?: number;
   /** Number of renders before browser instance is cleanly recycled (default: 100) */
   maxOperationsPerBrowser?: number;
-  /** Custom executable path for Chromium */
-  executablePath?: string;
   /** Browser type to launch (default: 'chromium') */
   browserType?: 'chromium' | 'firefox' | 'webkit';
-  /** Additional launch options passed to Playwright */
+  /** Additional launch options passed to Playwright Core */
   launchOptions?: Record<string, unknown>;
 }
 
