@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as path from 'path';
 import { BrowserDetector } from '../../src/browser/browser-detector';
 
 jest.mock('fs', () => {
@@ -90,45 +91,45 @@ describe('BrowserDetector', () => {
   describe('Linux platform detection', () => {
     it('should detect Google Chrome on Linux', () => {
       mockExistsSync.mockImplementation((p: string) => {
-        return p === '/usr/bin/google-chrome';
+        return path.normalize(p) === path.normalize('/usr/bin/google-chrome');
       });
       mockStatSync.mockReturnValue({ isFile: () => true });
 
       const detected = BrowserDetector.findFirst('linux');
       expect(detected).not.toBeNull();
       expect(detected?.name).toBe('Google Chrome');
-      expect(detected?.executablePath).toBe('/usr/bin/google-chrome');
+      expect(detected?.executablePath).toBe(path.normalize('/usr/bin/google-chrome'));
     });
 
     it('should detect Chromium on Linux', () => {
       mockExistsSync.mockImplementation((p: string) => {
-        return p === '/usr/bin/chromium';
+        return path.normalize(p) === path.normalize('/usr/bin/chromium');
       });
       mockStatSync.mockReturnValue({ isFile: () => true });
 
       const detected = BrowserDetector.findFirst('linux');
       expect(detected).not.toBeNull();
       expect(detected?.name).toBe('Chromium');
-      expect(detected?.executablePath).toBe('/usr/bin/chromium');
+      expect(detected?.executablePath).toBe(path.normalize('/usr/bin/chromium'));
     });
 
     it('should detect Microsoft Edge on Linux', () => {
       mockExistsSync.mockImplementation((p: string) => {
-        return p === '/usr/bin/microsoft-edge';
+        return path.normalize(p) === path.normalize('/usr/bin/microsoft-edge');
       });
       mockStatSync.mockReturnValue({ isFile: () => true });
 
       const detected = BrowserDetector.findFirst('linux');
       expect(detected).not.toBeNull();
       expect(detected?.name).toBe('Microsoft Edge');
-      expect(detected?.executablePath).toBe('/usr/bin/microsoft-edge');
+      expect(detected?.executablePath).toBe(path.normalize('/usr/bin/microsoft-edge'));
     });
   });
 
   describe('macOS platform detection', () => {
     it('should detect Google Chrome on macOS', () => {
       mockExistsSync.mockImplementation((p: string) => {
-        return p === '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+        return path.normalize(p) === path.normalize('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome');
       });
       mockStatSync.mockReturnValue({ isFile: () => true });
 
@@ -140,7 +141,7 @@ describe('BrowserDetector', () => {
 
     it('should detect Microsoft Edge on macOS', () => {
       mockExistsSync.mockImplementation((p: string) => {
-        return p === '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge';
+        return path.normalize(p) === path.normalize('/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge');
       });
       mockStatSync.mockReturnValue({ isFile: () => true });
 
@@ -152,7 +153,7 @@ describe('BrowserDetector', () => {
 
     it('should detect Chromium on macOS', () => {
       mockExistsSync.mockImplementation((p: string) => {
-        return p === '/Applications/Chromium.app/Contents/MacOS/Chromium';
+        return path.normalize(p) === path.normalize('/Applications/Chromium.app/Contents/MacOS/Chromium');
       });
       mockStatSync.mockReturnValue({ isFile: () => true });
 
@@ -183,7 +184,7 @@ describe('BrowserDetector', () => {
     });
 
     it('should return isReady: true and defaultBrowser on diagnose() when browser is found', () => {
-      mockExistsSync.mockImplementation((p: string) => p === '/usr/bin/chromium');
+      mockExistsSync.mockImplementation((p: string) => path.normalize(p) === path.normalize('/usr/bin/chromium'));
       mockStatSync.mockReturnValue({ isFile: () => true });
 
       const result = BrowserDetector.diagnose('linux');
@@ -195,7 +196,7 @@ describe('BrowserDetector', () => {
 
   describe('NestJS Service Instance methods', () => {
     it('should delegate findFirst, findAll and diagnose via service instance', () => {
-      mockExistsSync.mockImplementation((p: string) => p === '/usr/bin/chromium');
+      mockExistsSync.mockImplementation((p: string) => path.normalize(p) === path.normalize('/usr/bin/chromium'));
       mockStatSync.mockReturnValue({ isFile: () => true });
 
       const service = new BrowserDetector();
