@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Modern, robust and enterprise-grade PDF generation module for NestJS powered by Playwright and Handlebars",
   "author": "Angelito Systems <contact@angelitosystems.com>",
-  "homepage": "https://angelitosystems.com",
+  "homepage": "https://angelitosystems.github.io/nestjs-pdf/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/angelitosystems/nestjs-pdf.git"
