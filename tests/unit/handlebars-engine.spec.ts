@@ -86,6 +86,9 @@ describe('HandlebarsTemplateEngine & TemplateService', () => {
     const service = new TemplateService(engine);
     const tpl = `
       <span>Date: {{date dateVal}}</span>
+      <span>FormatDate: {{formatDate dateVal "YYYY-MM-DD"}}</span>
+      <span>Default: {{default note "N/A"}}</span>
+      <span>Json: {{{json userObj}}}</span>
       <span>Num: {{formatNumber 1234.5678 2}}</span>
       <span>Upper: {{uppercase "hello"}}</span>
       <span>Lower: {{lowercase "WORLD"}}</span>
@@ -103,7 +106,9 @@ describe('HandlebarsTemplateEngine & TemplateService', () => {
     const html = await service.render({
       templateContent: tpl,
       data: {
-        dateVal: new Date('2026-05-15T00:00:00Z'),
+        dateVal: new Date('2026-05-15T12:00:00Z'),
+        note: null,
+        userObj: { id: 1 },
         status: 'ACTIVE',
         score: 85,
         isMember: true,
@@ -114,6 +119,9 @@ describe('HandlebarsTemplateEngine & TemplateService', () => {
       },
     });
 
+    expect(html).toContain('FormatDate: 2026-05-15');
+    expect(html).toContain('Default: N/A');
+    expect(html).toContain('Json: {"id":1}');
     expect(html).toContain('Num: 1,234.57');
     expect(html).toContain('Upper: HELLO');
     expect(html).toContain('Lower: world');

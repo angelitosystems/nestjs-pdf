@@ -1,3 +1,39 @@
+function formatDateFn(value: unknown, formatOrLocale = 'YYYY-MM-DD', locale = 'en-US'): string {
+  if (value === null || value === undefined || value === '') return '';
+  const dateObj = value instanceof Date ? value : new Date(String(value));
+  if (isNaN(dateObj.getTime())) return String(value);
+
+  if (typeof formatOrLocale === 'string' && /[YMDHms]/.test(formatOrLocale)) {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const year = dateObj.getFullYear();
+    const month = pad(dateObj.getMonth() + 1);
+    const day = pad(dateObj.getDate());
+    const hours = pad(dateObj.getHours());
+    const minutes = pad(dateObj.getMinutes());
+    const seconds = pad(dateObj.getSeconds());
+
+    return formatOrLocale
+      .replace(/YYYY/g, String(year))
+      .replace(/YY/g, String(year).slice(-2))
+      .replace(/MM/g, month)
+      .replace(/DD/g, day)
+      .replace(/HH/g, hours)
+      .replace(/mm/g, minutes)
+      .replace(/ss/g, seconds);
+  }
+
+  const targetLocale = typeof formatOrLocale === 'string' && formatOrLocale.includes('-') ? formatOrLocale : locale;
+  try {
+    return new Intl.DateTimeFormat(typeof targetLocale === 'string' ? targetLocale : 'en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(dateObj);
+  } catch {
+    return dateObj.toISOString().split('T')[0];
+  }
+}
+
 /**
  * Built-in, safe, typed Handlebars helpers.
  */
@@ -15,18 +51,26 @@ export const defaultHandlebarsHelpers: Record<string, (...args: unknown[]) => un
     }
   },
 
+  formatDate(value: unknown, formatOrLocale = 'YYYY-MM-DD', locale = 'en-US'): string {
+    return formatDateFn(value, formatOrLocale, locale);
+  },
+
   date(value: unknown, locale = 'en-US'): string {
-    if (!value) return '';
-    const dateObj = value instanceof Date ? value : new Date(String(value));
-    if (isNaN(dateObj.getTime())) return String(value);
+    return formatDateFn(value, 'YYYY-MM-DD', locale);
+  },
+
+  default(value: unknown, defaultValue: unknown): unknown {
+    if (value === null || value === undefined || value === '') {
+      return defaultValue;
+    }
+    return value;
+  },
+
+  json(value: unknown): string {
     try {
-      return new Intl.DateTimeFormat(typeof locale === 'string' ? locale : 'en-US', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      }).format(dateObj);
+      return JSON.stringify(value);
     } catch {
-      return dateObj.toISOString().split('T')[0];
+      return String(value);
     }
   },
 
