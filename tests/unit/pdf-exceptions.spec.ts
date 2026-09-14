@@ -1,5 +1,11 @@
 import {
   PdfError,
+  PdfBrowserError,
+  PdfBrowserNotFoundError,
+  PdfBrowserLaunchFailedError,
+  PdfBrowserExecutableInvalidError,
+  PdfBrowserConnectionFailedError,
+  PdfRenderFailedError,
   PdfTemplateNotFoundError,
   PdfRenderingError,
   PdfTimeoutError,
@@ -18,6 +24,53 @@ describe('PdfExceptions', () => {
     expect(err.name).toBe('PdfError');
     expect(err.code).toBe('CUSTOM_CODE');
     expect(err.details).toEqual({ key: 'val' });
+  });
+
+  it('PdfError.toResponse should produce clean formatted error object', () => {
+    const err = new PdfBrowserNotFoundError();
+    const res = err.toResponse();
+
+    expect(res).toEqual({
+      success: false,
+      error: {
+        code: 'PDF_BROWSER_NOT_FOUND',
+        message: 'No compatible Chromium-based browser was found.',
+        details: {
+          suggestion: 'Install Chrome, Chromium or Edge, or configure browser.executablePath.',
+        },
+      },
+    });
+  });
+
+  it('PdfBrowserNotFoundError should set canonical code and suggestion', () => {
+    const err = new PdfBrowserNotFoundError();
+    expect(err).toBeInstanceOf(PdfBrowserError);
+    expect(err.code).toBe('PDF_BROWSER_NOT_FOUND');
+    expect(err.details?.suggestion).toContain('Install Chrome');
+  });
+
+  it('PdfBrowserLaunchFailedError should set canonical code and hide stack in non-debug mode', () => {
+    const cause = new Error('Process exited with code 1');
+    const err = new PdfBrowserLaunchFailedError('Cannot start', cause);
+    expect(err.code).toBe('PDF_BROWSER_LAUNCH_FAILED');
+    expect(err.details?.suggestion).toBeDefined();
+  });
+
+  it('PdfBrowserExecutableInvalidError should capture invalid path', () => {
+    const err = new PdfBrowserExecutableInvalidError('/bad/path/chrome.exe');
+    expect(err.code).toBe('PDF_BROWSER_EXECUTABLE_INVALID');
+    expect(err.details?.executablePath).toBe('/bad/path/chrome.exe');
+  });
+
+  it('PdfBrowserConnectionFailedError should capture endpoint', () => {
+    const err = new PdfBrowserConnectionFailedError('http://localhost:9222');
+    expect(err.code).toBe('PDF_BROWSER_CONNECTION_FAILED');
+    expect(err.details?.endpoint).toBe('http://localhost:9222');
+  });
+
+  it('PdfRenderFailedError should have PDF_RENDER_FAILED code', () => {
+    const err = new PdfRenderFailedError('Failed creating PDF');
+    expect(err.code).toBe('PDF_RENDER_FAILED');
   });
 
   it('PdfTemplateNotFoundError should set searchPaths in details', () => {
