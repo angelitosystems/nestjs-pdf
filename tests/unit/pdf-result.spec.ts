@@ -95,4 +95,26 @@ describe('PdfResult', () => {
     );
     expect(sendMock).toHaveBeenCalledWith(dummyBuffer);
   });
+
+  it('should support toBuffer(), toStream(), and sendToHttp() convenience methods', async () => {
+    const result = new PdfResultImpl(dummyBuffer, 'invoice.pdf');
+    expect(result.toBuffer().equals(dummyBuffer)).toBe(true);
+    expect(result.toStream()).toBeInstanceOf(Readable);
+
+    const sendMock = jest.fn();
+    const setHeaderMock = jest.fn();
+    const statusMock = jest.fn().mockReturnThis();
+    const mockRes: HttpResponseLike = {
+      setHeader: setHeaderMock,
+      status: statusMock,
+      send: sendMock,
+    };
+
+    await result.sendToHttp(mockRes, { filename: 'report-streamed.pdf' });
+    expect(sendMock).toHaveBeenCalledWith(dummyBuffer);
+    expect(setHeaderMock).toHaveBeenCalledWith(
+      'Content-Disposition',
+      expect.stringContaining('filename="report-streamed.pdf"'),
+    );
+  });
 });

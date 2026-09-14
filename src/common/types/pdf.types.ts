@@ -1,4 +1,4 @@
-import { InjectionToken, ModuleMetadata, OptionalFactoryDependency, Type } from '@nestjs/common';
+import { InjectionToken, ModuleMetadata, OptionalFactoryDependency, Provider, Type } from '@nestjs/common';
 import { Readable } from 'stream';
 
 /**
@@ -139,6 +139,8 @@ export interface PdfCacheOptions {
 export interface ConcurrencyOptions {
   /** Maximum simultaneous PDF renders (default: 5) */
   concurrency?: number;
+  /** Alias for concurrency */
+  limit?: number;
   /** Maximum queue wait time before timeout rejection in ms (default: 30000) */
   queueTimeout?: number;
 }
@@ -209,8 +211,8 @@ export interface PdfModuleOptions {
   defaultOrientation?: PdfOrientation;
   /** Default margins */
   defaultMargins?: PdfMargins;
-  /** Concurrency limit for simultaneous PDF generations (default: 5) */
-  concurrency?: number;
+  /** Concurrency limit for simultaneous PDF generations (default: 5) or concurrency options */
+  concurrency?: number | ConcurrencyOptions;
   /** Maximum queue wait time before rejecting with timeout in ms (default: 30000) */
   queueTimeout?: number;
   /** Overall render timeout in ms (default: 30000) */
@@ -235,6 +237,8 @@ export interface PdfModuleOptions {
   };
   /** Observability event listeners */
   onEvent?: PdfEventListener;
+  /** Custom providers registered within PdfModule */
+  providers?: Provider[];
 }
 
 /**
@@ -250,6 +254,7 @@ export interface PdfModuleAsyncOptions extends Pick<ModuleMetadata, 'imports'> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   useFactory?: (...args: any[]) => Promise<PdfModuleOptions> | PdfModuleOptions;
   inject?: (InjectionToken | OptionalFactoryDependency)[];
+  extraProviders?: Provider[];
 }
 
 /**
@@ -284,6 +289,12 @@ export interface GeneratePdfOptions {
   header?: PdfHeaderFooter;
   /** Footer options */
   footer?: PdfHeaderFooter;
+  /** Combined header & footer templates configuration */
+  headerFooter?: {
+    headerTemplate?: string;
+    footerTemplate?: string;
+    displayHeaderFooter?: boolean;
+  };
   /** Watermark displayed across all pages */
   watermark?: PdfWatermark;
   /** Custom fonts to inject */
@@ -344,11 +355,17 @@ export interface PdfResult {
   readonly mimeType: string;
   /** Metadata associated with this PDF */
   readonly metadata?: PdfMetadata;
+  /** Returns the generated PDF Buffer */
+  toBuffer(): Buffer;
   /** Creates a readable stream of the PDF buffer */
   stream(): Readable;
+  /** Creates a readable stream of the PDF buffer (alias of stream) */
+  toStream(): Readable;
   /** Saves the PDF to disk using the configured StorageAdapter */
   save(destinationPath: string): Promise<string>;
   /** Sends the PDF through an HTTP response (Express or Fastify) */
   send(response: HttpResponseLike, options?: SendHttpOptions): Promise<void>;
+  /** Streams the PDF directly to an HTTP response (alias of send) */
+  sendToHttp(response: HttpResponseLike, options?: SendHttpOptions): Promise<void>;
 }
 

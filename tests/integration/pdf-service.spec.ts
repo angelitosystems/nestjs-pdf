@@ -108,4 +108,19 @@ describe('PdfService (Integration)', () => {
       }),
     ).rejects.toThrow(PdfAbortError);
   });
+
+  it('should support headerFooter combined option', async () => {
+    await pdfService.generate({
+      html: '<div>Main Content</div>',
+      headerFooter: {
+        headerTemplate: '<div class="header">Header</div>',
+        footerTemplate: '<div class="footer">Footer</div>',
+      },
+    });
+
+    expect(capturedRenderOptions).toBeDefined();
+    expect(capturedRenderOptions?.displayHeaderFooter).toBe(true);
+    expect(capturedRenderOptions?.headerTemplate).toBe('<div class="header">Header</div>');
+    expect(capturedRenderOptions?.footerTemplate).toBe('<div class="footer">Footer</div>');
+  });
 });

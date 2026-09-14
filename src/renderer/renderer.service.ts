@@ -109,13 +109,24 @@ export class PdfRendererService {
     const fullHtml = this.assembleDocument(htmlContent, styles.join('\n'), watermarkHtml);
 
     // 4. Header and Footer
+    const headerOption =
+      options.header ??
+      (options.headerFooter?.headerTemplate
+        ? { html: options.headerFooter.headerTemplate }
+        : undefined);
+    const footerOption =
+      options.footer ??
+      (options.headerFooter?.footerTemplate
+        ? { html: options.headerFooter.footerTemplate }
+        : undefined);
+
     const headerTemplate = await this.buildHeaderFooterHtml(
-      options.header,
+      headerOption,
       options.data,
       templatesBasePath,
     );
     const footerTemplate = await this.buildHeaderFooterHtml(
-      options.footer,
+      footerOption,
       options.data,
       templatesBasePath,
     );

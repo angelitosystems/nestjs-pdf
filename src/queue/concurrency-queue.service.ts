@@ -28,12 +28,28 @@ export class ConcurrencyQueueService implements OnModuleDestroy {
     @Inject(PDF_MODULE_OPTIONS)
     private readonly moduleOptions?: PdfModuleOptions,
   ) {
+    const concurrencyVal =
+      typeof moduleOptions?.concurrency === 'object' && moduleOptions?.concurrency !== null
+        ? moduleOptions.concurrency.concurrency ?? moduleOptions.concurrency.limit
+        : moduleOptions?.concurrency;
+
+    const queueTimeoutFromConcurrency =
+      typeof moduleOptions?.concurrency === 'object' && moduleOptions?.concurrency !== null
+        ? moduleOptions.concurrency.queueTimeout
+        : undefined;
+
     this.limit = Math.max(
       1,
-      moduleOptions?.queue?.concurrency ?? moduleOptions?.concurrency ?? 5,
+      moduleOptions?.queue?.concurrency ??
+        moduleOptions?.queue?.limit ??
+        concurrencyVal ??
+        5,
     );
     this.defaultQueueTimeout =
-      moduleOptions?.queue?.queueTimeout ?? moduleOptions?.queueTimeout ?? 30000;
+      moduleOptions?.queue?.queueTimeout ??
+      queueTimeoutFromConcurrency ??
+      moduleOptions?.queueTimeout ??
+      30000;
   }
 
   public get concurrency(): number {

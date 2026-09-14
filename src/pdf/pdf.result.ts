@@ -17,8 +17,16 @@ export class PdfResultImpl implements PdfResult {
     this.size = buffer.length;
   }
 
+  public toBuffer(): Buffer {
+    return this.buffer;
+  }
+
   public stream(): Readable {
     return bufferToStream(this.buffer);
+  }
+
+  public toStream(): Readable {
+    return this.stream();
   }
 
   public async save(destinationPath: string): Promise<string> {
@@ -67,5 +75,9 @@ export class PdfResultImpl implements PdfResult {
     } else if (response.raw && typeof response.raw.end === 'function') {
       response.raw.end(this.buffer);
     }
+  }
+
+  public async sendToHttp(response: HttpResponseLike, options?: SendHttpOptions): Promise<void> {
+    return await this.send(response, options);
   }
 }

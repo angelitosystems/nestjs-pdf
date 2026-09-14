@@ -125,4 +125,12 @@ describe('ConcurrencyQueueService', () => {
     await expect(queuedTask).rejects.toThrow(PdfAbortError);
     await expect(blocker).resolves.toBe('blocker');
   });
+
+  it('should accept concurrency configured as object with limit and queueTimeout', async () => {
+    const queue = new ConcurrencyQueueService({
+      concurrency: { limit: 2, queueTimeout: 50 },
+    });
+
+    expect(queue.concurrency).toBe(2);
+  });
 });

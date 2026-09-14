@@ -45,10 +45,12 @@ export class PdfModule {
       useValue: options,
     };
 
+    const extraProviders = options.providers || [];
+
     return {
       module: PdfModule,
       imports: this.getDefaultImports(),
-      providers: [optionsProvider, PdfService],
+      providers: [optionsProvider, PdfService, ...extraProviders],
       exports: [
         PdfService,
         RendererModule,
@@ -58,17 +60,19 @@ export class PdfModule {
         BrowserModule,
         QueueModule,
         PDF_MODULE_OPTIONS,
+        ...extraProviders,
       ],
     };
   }
 
   public static forRootAsync(asyncOptions: PdfModuleAsyncOptions): DynamicModule {
     const asyncProviders = this.createAsyncProviders(asyncOptions);
+    const extraProviders = asyncOptions.extraProviders || [];
 
     return {
       module: PdfModule,
       imports: [...this.getDefaultImports(), ...(asyncOptions.imports || [])],
-      providers: [...asyncProviders, PdfService],
+      providers: [...asyncProviders, PdfService, ...extraProviders],
       exports: [
         PdfService,
         RendererModule,
@@ -78,6 +82,7 @@ export class PdfModule {
         BrowserModule,
         QueueModule,
         PDF_MODULE_OPTIONS,
+        ...extraProviders,
       ],
     };
   }
