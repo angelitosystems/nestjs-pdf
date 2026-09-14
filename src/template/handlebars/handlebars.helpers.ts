@@ -1,9 +1,11 @@
-function formatDateFn(value: unknown, formatOrLocale = 'YYYY-MM-DD', locale = 'en-US'): string {
+function formatDateFn(value: unknown, formatOrLocale: unknown = 'YYYY-MM-DD', locale: unknown = 'en-US'): string {
   if (value === null || value === undefined || value === '') return '';
   const dateObj = value instanceof Date ? value : new Date(String(value));
   if (isNaN(dateObj.getTime())) return String(value);
 
-  if (typeof formatOrLocale === 'string' && /[YMDHms]/.test(formatOrLocale)) {
+  const formatStr = typeof formatOrLocale === 'string' ? formatOrLocale : 'YYYY-MM-DD';
+
+  if (/[YMDHms]/.test(formatStr)) {
     const pad = (n: number) => String(n).padStart(2, '0');
     const year = dateObj.getFullYear();
     const month = pad(dateObj.getMonth() + 1);
@@ -12,7 +14,7 @@ function formatDateFn(value: unknown, formatOrLocale = 'YYYY-MM-DD', locale = 'e
     const minutes = pad(dateObj.getMinutes());
     const seconds = pad(dateObj.getSeconds());
 
-    return formatOrLocale
+    return formatStr
       .replace(/YYYY/g, String(year))
       .replace(/YY/g, String(year).slice(-2))
       .replace(/MM/g, month)
@@ -22,9 +24,15 @@ function formatDateFn(value: unknown, formatOrLocale = 'YYYY-MM-DD', locale = 'e
       .replace(/ss/g, seconds);
   }
 
-  const targetLocale = typeof formatOrLocale === 'string' && formatOrLocale.includes('-') ? formatOrLocale : locale;
+  const targetLocale =
+    typeof formatOrLocale === 'string' && formatOrLocale.includes('-')
+      ? formatOrLocale
+      : typeof locale === 'string'
+      ? locale
+      : 'en-US';
+
   try {
-    return new Intl.DateTimeFormat(typeof targetLocale === 'string' ? targetLocale : 'en-US', {
+    return new Intl.DateTimeFormat(targetLocale, {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -38,7 +46,7 @@ function formatDateFn(value: unknown, formatOrLocale = 'YYYY-MM-DD', locale = 'e
  * Built-in, safe, typed Handlebars helpers.
  */
 export const defaultHandlebarsHelpers: Record<string, (...args: unknown[]) => unknown> = {
-  currency(value: unknown, currencyCode = 'USD', locale = 'en-US'): string {
+  currency(value: unknown, currencyCode: unknown = 'USD', locale: unknown = 'en-US'): string {
     const num = typeof value === 'number' ? value : parseFloat(String(value ?? 0));
     if (isNaN(num)) return String(value ?? '');
     try {
@@ -51,11 +59,11 @@ export const defaultHandlebarsHelpers: Record<string, (...args: unknown[]) => un
     }
   },
 
-  formatDate(value: unknown, formatOrLocale = 'YYYY-MM-DD', locale = 'en-US'): string {
+  formatDate(value: unknown, formatOrLocale: unknown = 'YYYY-MM-DD', locale: unknown = 'en-US'): string {
     return formatDateFn(value, formatOrLocale, locale);
   },
 
-  date(value: unknown, locale = 'en-US'): string {
+  date(value: unknown, locale: unknown = 'en-US'): string {
     return formatDateFn(value, 'YYYY-MM-DD', locale);
   },
 
