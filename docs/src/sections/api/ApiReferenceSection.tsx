@@ -73,15 +73,17 @@ export function ApiReferenceSection() {
         <CodeBlock
           filename="src/common/types/pdf.types.ts"
           code={`export interface GeneratePdfOptions {
-  template?: string;                   // Template name or relative path
+  template?: string;                   // Template name or relative path (.hbs)
   html?: string;                       // Raw inline HTML string
   data?: Record<string, any>;          // Data payload passed to template
-  format?: 'A4' | 'A3' | 'Letter' ...; // Paper format
-  landscape?: boolean;                 // Orientation
+  format?: 'A4' | 'A3' | 'Letter'...;  // Paper format
+  orientation?: 'portrait' | 'landscape'; // Page orientation (default: portrait)
   margins?: PdfMargins;                // Top, right, bottom, left margins
   printBackground?: boolean;           // Print background graphics (default true)
   watermark?: PdfWatermark;            // Watermark configuration
-  headerFooter?: PdfHeaderFooter;      // Header & footer templates
+  header?: PdfHeaderFooter;            // Header configuration ({ html, template, height })
+  footer?: PdfHeaderFooter;            // Footer configuration ({ html, template, pageNumbers })
+  headerFooter?: { headerTemplate?: string; footerTemplate?: string }; // Combined templates
   signal?: AbortSignal;                // Cancellation signal
   timeout?: number;                    // Task execution timeout in ms
   fonts?: PdfFont[];                   // Custom fonts to inject

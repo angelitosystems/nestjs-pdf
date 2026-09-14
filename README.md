@@ -106,14 +106,12 @@ import { InvoiceService } from './invoice.service';
   imports: [
     PdfModule.forRoot({
       templatesPath: './templates',
+      concurrency: 5,
+      queueTimeout: 30000,
       browser: {
         min: 1,
         max: 3,
         maxOperationsPerBrowser: 50,
-      },
-      concurrency: {
-        limit: 5,
-        queueTimeout: 30000,
       },
       security: {
         allowExternalResources: false,
@@ -155,18 +153,21 @@ export class InvoiceController {
         opacity: 0.15,
         color: '#22c55e',
       },
-      headerFooter: {
-        headerTemplate: '<div style="font-size: 10px; width: 100%; text-align: right;">Internal Record</div>',
-        footerTemplate: '<div style="font-size: 10px; width: 100%; text-align: center;">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>',
-        displayHeaderFooter: true,
+      header: {
+        html: '<div style="font-size: 10px; width: 100%; text-align: right;">Internal Record</div>',
+      },
+      footer: {
+        html: '<div style="font-size: 10px; width: 100%; text-align: center;">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>',
+        pageNumbers: true,
       },
     });
 
     // Directly stream to Express or Fastify response
-    await pdf.sendToHttp(res, {
+    await pdf.send(res, {
       filename: 'invoice-2026-001.pdf',
       disposition: 'attachment',
     });
+    // Tip: `await pdf.sendToHttp(res, ...)` is also available as an alias.
   }
 }
 ```
@@ -190,6 +191,8 @@ import { PdfModule } from '@angelitosystems/nestjs-pdf';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         templatesPath: config.get<string>('PDF_TEMPLATES_PATH', './templates'),
+        concurrency: config.get<number>('PDF_CONCURRENCY_LIMIT', 10),
+        queueTimeout: 30000,
         browser: {
           min: config.get<number>('PDF_BROWSER_MIN', 1),
           max: config.get<number>('PDF_BROWSER_MAX', 4),
@@ -197,15 +200,77 @@ import { PdfModule } from '@angelitosystems/nestjs-pdf';
             executablePath: config.get<string>('CHROMIUM_PATH'),
           },
         },
-        concurrency: {
-          limit: config.get<number>('PDF_CONCURRENCY_LIMIT', 10),
-        },
       }),
     }),
   ],
 })
 export class AppModule {}
 ```
+
+---
+
+## 📋 Configuration Options (`PdfModuleOptions`)
+
+| Option | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `templatesPath` | `string` | `'./templates'` | Directory where Handlebars templates reside on disk |
+| `concurrency` | `number \| ConcurrencyOptions` | `5` | Maximum concurrent PDF renders (can be a number or `{ concurrency, limit, queueTimeout }`) |
+| `queueTimeout` | `number` | `30000` | Max milliseconds a generation request can wait in the queue before rejection |
+| `timeout` | `number` | `30000` | Render timeout in milliseconds passed to Playwright |
+| `browser.min` | `number` | `1` | Standby warm Chromium browser instances |
+| `browser.max` | `number` | `5` | Maximum concurrent browser processes created |
+| `browser.maxOperationsPerBrowser` | `number` | `100` | Automatically recycles browser process after N renders to prevent memory leaks |
+| `browser.executablePath` | `string` | `undefined` | Custom Chromium/Chrome executable path (e.g. `/usr/bin/chromium`) |
+| `browser.launchOptions` | `Record<string, unknown>` | `{}` | Additional Playwright launch arguments and options |
+| `security.allowExternalResources`| `boolean` | `false` | Enables fetching external HTTP/HTTPS assets (images, stylesheets) |
+| `security.allowedDomains` | `string[]` | `[]` | Whitelist of allowed domains when external resources are enabled |
+| `security.allowedAssetPaths` | `string[]` | `[]` | Whitelist of local directories permitted for asset loading |
+| `security.maxAssetSizeBytes` | `number` | `10485760` (10MB) | Maximum allowed size in bytes for a single asset |
+| `cache.enabled` | `boolean` | `false` | Enables in-memory caching of compiled Handlebars templates |
+| `cache.maxItems` | `number` | `undefined` | Maximum compiled templates kept in LRU cache |
+| `cache.ttlMs` | `number` | `undefined` | Cache TTL in milliseconds |
+| `queue.concurrency` | `number` | `5` | Maximum concurrent jobs in the queue |
+| `queue.queueTimeout` | `number` | `30000` | Queue timeout in milliseconds |
+| `defaultFormat` | `PdfFormat` | `'A4'` | Default paper size (`'A4'`, `'Letter'`, `'Legal'`, etc.) |
+| `defaultOrientation` | `'portrait' \| 'landscape'` | `'portrait'` | Default page orientation |
+| `defaultMargins` | `PdfMargins` | `undefined` | Default page margins (`top`, `right`, `bottom`, `left`) |
+| `providers` | `Provider[]` | `[]` | Custom providers to register inside `PdfModule` |
+| `onEvent` | `(event: PdfEvent) => void` | `undefined` | Lifecycle event listener for logging and APM metrics |
+
+---
+
+## 📄 Generation Options (`GeneratePdfOptions`)
+
+| Option | Type | Description |
+| :--- | :--- | :--- |
+| `template` | `string` | Template name (e.g. `'invoice'` resolves to `./templates/invoice/template.hbs` or `invoice.hbs`) |
+| `html` | `string` | Raw inline HTML string (alternative to `template`) |
+| `data` | `Record<string, unknown>` | Data context passed to Handlebars |
+| `format` | `PdfFormat` | Paper format: `'A4'`, `'Letter'`, `'Legal'`, `'A3'`, etc. |
+| `orientation` | `'portrait' \| 'landscape'` | Page orientation (default: `'portrait'`) |
+| `margins` | `PdfMargins` | Margins (e.g. `{ top: '15mm', right: '15mm', bottom: '15mm', left: '15mm' }`) |
+| `printBackground` | `boolean` | Print CSS backgrounds and colors (default: `true`) |
+| `header` | `PdfHeaderFooter` | Header configuration: `{ html?: string, template?: string, height?: string }` |
+| `footer` | `PdfHeaderFooter` | Footer configuration: `{ html?: string, template?: string, pageNumbers?: boolean }` |
+| `watermark` | `PdfWatermark` | Diagonal watermark: `{ text: string, opacity?: number, color?: string, fontSize?: string }` |
+| `fonts` | `PdfFont[]` | Custom web fonts to embed via base64 |
+| `css` | `string` | Extra CSS to inject into rendered document |
+| `signal` | `AbortSignal` | Native cancellation signal (e.g. from `req.on('close')`) |
+| `timeout` | `number` | Specific timeout for this generation job (in ms) |
+
+---
+
+## 📦 Result Consumption (`PdfResult`)
+
+`const pdf = await pdfService.generate({ ... });`
+
+- **`pdf.buffer`** / **`pdf.toBuffer()`**: Returns the raw PDF `Buffer`.
+- **`pdf.stream()`** / **`pdf.toStream()`**: Returns a Node.js `Readable` stream.
+- **`pdf.size`**: Size of the PDF in bytes.
+- **`pdf.filename`**: The suggested or generated filename.
+- **`pdf.mimeType`**: Always `'application/pdf'`.
+- **`await pdf.save(destinationPath)`**: Persists the PDF using the configured `StorageAdapter`.
+- **`await pdf.send(res, options)`** / **`await pdf.sendToHttp(res, options)`**: Streams the PDF directly into Express or Fastify responses with appropriate `Content-Disposition`, `Content-Type`, and `Content-Length` headers.
 
 ---
 

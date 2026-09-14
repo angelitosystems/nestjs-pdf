@@ -71,9 +71,7 @@ import { PdfModule } from '@angelitosystems/nestjs-pdf';
           min: config.get<number>('PDF_BROWSER_MIN', 1),
           max: config.get<number>('PDF_BROWSER_MAX', 4),
         },
-        concurrency: {
-          limit: config.get<number>('PDF_CONCURRENCY', 8),
-        },
+        concurrency: config.get<number>('PDF_CONCURRENCY', 8),
       }),
     }),
   ],

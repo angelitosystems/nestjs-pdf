@@ -167,8 +167,8 @@ import { PdfModule } from '@angelitosystems/nestjs-pdf';
   imports: [
     PdfModule.forRoot({
       templatesPath: './templates',
+      concurrency: 5,
       browser: { min: 1, max: 3 },
-      concurrency: { limit: 5 },
       security: { allowExternalResources: false },
     }),
   ],
@@ -196,7 +196,7 @@ export class InvoiceController {
     });
 
     // Directly stream to Express or Fastify
-    await pdf.sendToHttp(res, { filename: 'invoice.pdf' });
+    await pdf.send(res, { filename: 'invoice.pdf' });
   }
 }`}
             />

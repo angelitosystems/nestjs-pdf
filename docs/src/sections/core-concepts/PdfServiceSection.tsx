@@ -48,7 +48,7 @@ export class ReportService {
         data,
         signal: controller.signal, // Native cancellation support
         format: 'A4',
-        landscape: false,
+        orientation: 'portrait',
         printBackground: true,
       });
 
@@ -75,7 +75,7 @@ export class ReportService {
         <div className="space-y-3">
           <div className="p-4 rounded-xl bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
             <h4 className="font-mono text-xs font-bold text-rose-600 dark:text-rose-400">
-              result.toBuffer(): Buffer
+              result.buffer | result.toBuffer(): Buffer
             </h4>
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
               {locale === 'es'
@@ -86,7 +86,7 @@ export class ReportService {
 
           <div className="p-4 rounded-xl bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
             <h4 className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400">
-              result.toStream(): Readable
+              result.stream() | result.toStream(): Readable
             </h4>
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
               {locale === 'es'
@@ -108,7 +108,7 @@ export class ReportService {
 
           <div className="p-4 rounded-xl bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
             <h4 className="font-mono text-xs font-bold text-purple-600 dark:text-purple-400">
-              result.sendToHttp(res: HttpResponseLike, options?: SendHttpOptions): Promise&lt;void&gt;
+              result.send(res) | result.sendToHttp(res, options): Promise&lt;void&gt;
             </h4>
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
               {locale === 'es'

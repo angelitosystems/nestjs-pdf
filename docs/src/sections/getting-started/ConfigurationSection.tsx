@@ -49,11 +49,9 @@ import { PdfModule } from '@angelitosystems/nestjs-pdf';
           },
         },
 
-        // Backpressure queue
-        concurrency: {
-          limit: 10,                       // Max concurrent rendering operations
-          queueTimeout: 30000,             // Max ms a task can wait in queue before error
-        },
+        // Concurrency & Backpressure queue
+        concurrency: 10,                 // Max concurrent rendering operations
+        queueTimeout: 30000,             // Max ms a task can wait in queue before error
 
         // Security controls
         security: {
@@ -66,7 +64,8 @@ import { PdfModule } from '@angelitosystems/nestjs-pdf';
         // Template cache
         cache: {
           enabled: true,
-          ttl: 3600,                       // Cache compiled Handlebars delegates
+          ttlMs: 3600000,                  // Cache TTL in ms (1 hour)
+          maxItems: 100,                   // Max compiled templates in memory
         },
 
         // Default storage location
@@ -77,7 +76,7 @@ import { PdfModule } from '@angelitosystems/nestjs-pdf';
         // Global PDF generation defaults
         defaults: {
           format: 'A4',
-          printBackground: true,
+          orientation: 'portrait',
           margins: { top: '15mm', right: '15mm', bottom: '15mm', left: '15mm' },
         },
       }),
@@ -113,6 +112,30 @@ export class AppModule {}`}
                 </td>
               </tr>
               <tr>
+                <td className="p-3 text-rose-600 dark:text-rose-400 font-bold">concurrency</td>
+                <td className="p-3 text-slate-600 dark:text-slate-300">number | ConcurrencyOptions</td>
+                <td className="p-3 text-slate-500">5</td>
+                <td className="p-3 font-sans text-slate-600 dark:text-slate-400">
+                  {locale === 'es' ? 'Límite de tareas concurrentes de renderizado simultáneo.' : 'Concurrent generation concurrency slot ceiling.'}
+                </td>
+              </tr>
+              <tr>
+                <td className="p-3 text-rose-600 dark:text-rose-400 font-bold">queueTimeout</td>
+                <td className="p-3 text-slate-600 dark:text-slate-300">number</td>
+                <td className="p-3 text-slate-500">30000</td>
+                <td className="p-3 font-sans text-slate-600 dark:text-slate-400">
+                  {locale === 'es' ? 'Tiempo máximo en ms que una tarea espera en cola antes de expirar.' : 'Max ms a task waits in queue before timeout error.'}
+                </td>
+              </tr>
+              <tr>
+                <td className="p-3 text-rose-600 dark:text-rose-400 font-bold">timeout</td>
+                <td className="p-3 text-slate-600 dark:text-slate-300">number</td>
+                <td className="p-3 text-slate-500">30000</td>
+                <td className="p-3 font-sans text-slate-600 dark:text-slate-400">
+                  {locale === 'es' ? 'Tiempo límite general de renderizado en ms.' : 'Overall render timeout in ms.'}
+                </td>
+              </tr>
+              <tr>
                 <td className="p-3 text-rose-600 dark:text-rose-400 font-bold">browser.min</td>
                 <td className="p-3 text-slate-600 dark:text-slate-300">number</td>
                 <td className="p-3 text-slate-500">1</td>
@@ -137,19 +160,27 @@ export class AppModule {}`}
                 </td>
               </tr>
               <tr>
-                <td className="p-3 text-rose-600 dark:text-rose-400 font-bold">concurrency.limit</td>
-                <td className="p-3 text-slate-600 dark:text-slate-300">number</td>
-                <td className="p-3 text-slate-500">5</td>
-                <td className="p-3 font-sans text-slate-600 dark:text-slate-400">
-                  {locale === 'es' ? 'Límite de tareas concurrentes simultáneas.' : 'Concurrent generation concurrency slot ceiling.'}
-                </td>
-              </tr>
-              <tr>
                 <td className="p-3 text-rose-600 dark:text-rose-400 font-bold">security.allowExternalResources</td>
                 <td className="p-3 text-slate-600 dark:text-slate-300">boolean</td>
                 <td className="p-3 text-slate-500">false</td>
                 <td className="p-3 font-sans text-slate-600 dark:text-slate-400">
                   {locale === 'es' ? 'Permite peticiones HTTP remotas en plantillas.' : 'Allows external HTTP asset requests in templates.'}
+                </td>
+              </tr>
+              <tr>
+                <td className="p-3 text-rose-600 dark:text-rose-400 font-bold">cache.enabled</td>
+                <td className="p-3 text-slate-600 dark:text-slate-300">boolean</td>
+                <td className="p-3 text-slate-500">false</td>
+                <td className="p-3 font-sans text-slate-600 dark:text-slate-400">
+                  {locale === 'es' ? 'Habilita caché en memoria para plantillas compiladas.' : 'Enables template compilation in-memory cache.'}
+                </td>
+              </tr>
+              <tr>
+                <td className="p-3 text-rose-600 dark:text-rose-400 font-bold">cache.ttlMs</td>
+                <td className="p-3 text-slate-600 dark:text-slate-300">number</td>
+                <td className="p-3 text-slate-500">undefined</td>
+                <td className="p-3 font-sans text-slate-600 dark:text-slate-400">
+                  {locale === 'es' ? 'Tiempo de vida de la plantilla en caché (ms).' : 'Cache time-to-live in ms.'}
                 </td>
               </tr>
             </tbody>

@@ -44,14 +44,12 @@ import { InvoiceController } from './invoice.controller';
   imports: [
     PdfModule.forRoot({
       templatesPath: './templates',
+      concurrency: 5,
+      queueTimeout: 20000,
       browser: {
         min: 1,
         max: 3,
         maxOperationsPerBrowser: 50,
-      },
-      concurrency: {
-        limit: 5,
-        queueTimeout: 20000,
       },
     }),
   ],
@@ -134,8 +132,8 @@ export class AppModule {}`}
         </div>
         <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 pl-10">
           {locale === 'es'
-            ? 'Inyecta PdfService en tu controlador y llama a generate(). El objeto PdfResult incluye sendToHttp() para transmitir directamente a Express o Fastify.'
-            : 'Inject PdfService into your controller and call generate(). The returned PdfResult provides sendToHttp() to stream directly to Express or Fastify.'}
+            ? 'Inyecta PdfService en tu controlador y llama a generate(). El objeto PdfResult incluye send() y sendToHttp() para transmitir directamente a Express o Fastify.'
+            : 'Inject PdfService into your controller and call generate(). The returned PdfResult provides send() and sendToHttp() to stream directly to Express or Fastify.'}
         </p>
         <div className="pl-10">
           <CodeBlock
@@ -165,15 +163,14 @@ export class InvoiceController {
         color: '#22c55e',
         opacity: 0.15,
       },
-      headerFooter: {
-        displayHeaderFooter: true,
-        footerTemplate:
-          '<div style="font-size: 9px; width: 100%; text-align: center;">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>',
+      footer: {
+        html: '<div style="font-size: 9px; width: 100%; text-align: center;">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>',
+        pageNumbers: true,
       },
     });
 
     // Directly streams PDF with correct Content-Type & disposition
-    await pdf.sendToHttp(res, {
+    await pdf.send(res, {
       filename: \`invoice-\${id}.pdf\`,
       disposition: 'attachment',
     });
